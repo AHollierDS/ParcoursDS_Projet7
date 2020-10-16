@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import auc, roc_auc_score, roc_curve
 
+
 def plot_roc(y_true, y_proba):
     """
     Plots the False Positive Rate against True Positive Rate curve for a given prediction.
-    Also gives the prediction score (AUC) and optimal 
+    Also gives the prediction score (AUC) and optimal threshold
     """
     # ROC curve characteristics
     fpr, tpr, thr = roc_curve(y_true, y_proba)
