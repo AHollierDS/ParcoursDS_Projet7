@@ -7,16 +7,17 @@ import numpy as np
 import category_encoders as ce
 
 # One-hot encoding for categorical columns with get_dummies
-def one_hot_encoder(df, nan_as_category = True):
+def encoders(df, nan_as_category = True):
     original_columns = list(df.columns)
     categorical_columns = [col for col in df.columns if df[col].dtype == 'object']
     
     one_hot = [x for x in categorical_columns if len(df[x].unique())<10]
     df = pd.get_dummies(df, columns= one_hot, dummy_na= nan_as_category)
     
-    binary = [x for x in categorical_columns if x not in one_hot]
-    bin_enc = ce.BinaryEncoder(cols = binary)
-    df = bin_enc.fit_transform(df)
+    freq = [x for x in categorical_columns if x not in one_hot]
+    frq_enc = ce.count.CountEncoder(cols = freq)
+    df = frq_enc.fit_transform(df)
+    df[freq] = df[freq]/len(df)
     
     new_columns = [c for c in df.columns if c not in original_columns]
     return df, new_columns
@@ -25,8 +26,8 @@ def one_hot_encoder(df, nan_as_category = True):
 def bureau_and_balance(num_rows = None, nan_as_category = True):
     bureau = pd.read_csv('../data/data_inputs/bureau.csv', nrows = num_rows)
     bb = pd.read_csv('../data/data_inputs/bureau_balance.csv', nrows = num_rows)
-    bb, bb_cat = one_hot_encoder(bb, nan_as_category)
-    bureau, bureau_cat = one_hot_encoder(bureau, nan_as_category)
+    bb, bb_cat = encoders(bb, nan_as_category)
+    bureau, bureau_cat = encoders(bureau, nan_as_category)
     
     # Bureau balance: Perform aggregations and merge with bureau.csv
     bb_aggregations = {'MONTHS_BALANCE': ['min', 'max', 'size']}
@@ -81,7 +82,7 @@ def bureau_and_balance(num_rows = None, nan_as_category = True):
 # Preprocess previous_applications.csv
 def previous_applications(num_rows = None, nan_as_category = True):
     prev = pd.read_csv('../data/data_inputs/previous_application.csv', nrows = num_rows)
-    prev, cat_cols = one_hot_encoder(prev, nan_as_category= True)
+    prev, cat_cols = encoders(prev, nan_as_category= True)
     # Days 365.243 values -> nan
     prev['DAYS_FIRST_DRAWING'].replace(365243, np.nan, inplace= True)
     prev['DAYS_FIRST_DUE'].replace(365243, np.nan, inplace= True)
@@ -127,7 +128,7 @@ def previous_applications(num_rows = None, nan_as_category = True):
 # Preprocess POS_CASH_balance.csv
 def pos_cash(num_rows = None, nan_as_category = True):
     pos = pd.read_csv('../data/data_inputs/POS_CASH_balance.csv', nrows = num_rows)
-    pos, cat_cols = one_hot_encoder(pos, nan_as_category= True)
+    pos, cat_cols = encoders(pos, nan_as_category= True)
     # Features
     aggregations = {
         'MONTHS_BALANCE': ['max', 'mean', 'size'],
@@ -148,7 +149,7 @@ def pos_cash(num_rows = None, nan_as_category = True):
 # Preprocess installments_payments.csv
 def installments_payments(num_rows = None, nan_as_category = True):
     ins = pd.read_csv('../data/data_inputs/installments_payments.csv', nrows = num_rows)
-    ins, cat_cols = one_hot_encoder(ins, nan_as_category= True)
+    ins, cat_cols = encoders(ins, nan_as_category= True)
     # Percentage and difference paid in each installment (amount paid and installment value)
     ins['PAYMENT_PERC'] = ins['AMT_PAYMENT'] / ins['AMT_INSTALMENT']
     ins['PAYMENT_DIFF'] = ins['AMT_INSTALMENT'] - ins['AMT_PAYMENT']
@@ -181,7 +182,7 @@ def installments_payments(num_rows = None, nan_as_category = True):
 # Preprocess credit_card_balance.csv
 def credit_card_balance(num_rows = None, nan_as_category = True):
     cc = pd.read_csv('../data/data_inputs/credit_card_balance.csv', nrows = num_rows)
-    cc, cat_cols = one_hot_encoder(cc, nan_as_category= True)
+    cc, cat_cols = encoders(cc, nan_as_category= True)
     # General aggregations
     cc.drop(['SK_ID_PREV'], axis= 1, inplace = True)
     cc_agg = cc.groupby('SK_ID_CURR').agg([ 'max', 'mean', 'sum', 'var'])
