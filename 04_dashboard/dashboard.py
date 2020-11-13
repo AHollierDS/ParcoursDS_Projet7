@@ -5,14 +5,17 @@ This script generate an interpretability dashboard for explaining why a customer
 was granted the loan he/she applied for.
 """
 
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
+
 import pandas as pd
 import numpy as np
 import shap
 
 from joblib import load
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
 
 
 def generate(thres=0.5):
@@ -42,9 +45,27 @@ def generate(thres=0.5):
         # Customer selection and decision
         html.Label('Customer selection :'),
         dcc.Dropdown(
+            id='customer_selection',
             options=df_decision['option'].tolist()
-        )
+        ),
+        
+        html.Label('Final decision :'),
+        html.Div(id='customer_decision')
     ])
+    
+    @app.callback(
+        Output(component_id='customer_decision', component_property='children'),
+        [Input(component_id='customer_selection', component_property='value')]
+    )
+    def update_decision_outputs(customer_id):
+        
+        decision = df_decision[df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
+        risk = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
+        
+        decision = 'granted' if decision else 'denied'
+        output = 'Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
+        
+        return output
     
     # Run the dashboard
     app.run_server()
@@ -58,7 +79,7 @@ def load_decisions(thres):
     df_decision = pd.read_csv('../02_classification/submission.csv')
     df_decision['LOAN'] = df_decision['TARGET']<thres
     df_decision['option'] = df_decision['SK_ID_CURR'].apply(
-        lambda x : {'label': str(x), 'value':str(x)})
+        lambda x : {'label': str(x), 'value':x})
     
     return df_decision
     
