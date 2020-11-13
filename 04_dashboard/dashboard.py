@@ -90,7 +90,7 @@ def generate(thres=0.5):
 
         fig.add_shape(type='rect',x0=cust_target//0.01/100, 
                   x1=cust_target//0.01/100 + 0.01, 
-                  y0=0, y1=cust_height)
+                  y0=0, y1=cust_height, fillcolor='yellow')
         
         return fig
     
