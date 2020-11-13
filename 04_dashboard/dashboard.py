@@ -16,15 +16,18 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.express as px
+import plotly.graph_objs as go
 
 
-def generate(thres=0.5):
+def generate(thres=0.5, n_sample = 1000):
     """
     Build and display the dashboard.
     
     params:
         thres:
             Threshold risk value above which a customer's loan is denied.
+        n_sample : 
+            Number of customers to include in the dashboard
             
     returns:
         a web application displaying the interpretability dashboard
@@ -34,6 +37,8 @@ def generate(thres=0.5):
     
     # Load data
     df_decision = load_decisions(thres=thres)
+    #df_cust = load_customer_data(n_sample=n_sample)
+    #df_shap = load_shap_values(n_sample=n_sample)
 
     # Dashboard layout
     app.layout = html.Div(children=[
@@ -62,9 +67,13 @@ def generate(thres=0.5):
         
         # Customer position vs customers panel
         html.H2(children='Customer position in customer panel'),
-        dcc.Graph(id='panel', figure=plot_panel(thres))
+        dcc.Graph(id='panel', figure=plot_panel(thres)),
+        
+        # Waterfall plot
+        html.H2(children='Waterfall for selected customer'),
+        dcc.Graph(id='force_plot', figure=plot_waterfall(100001))
+        
     ])
-   
 
     # Callbacks and component updates
     
@@ -102,6 +111,15 @@ def generate(thres=0.5):
         
         return fig
     
+    # Force plot
+    @app.callback(
+         Output(component_id='force_plot', component_property='figure'),
+         Input(component_id='customer_selection', component_property='value')
+    )
+    def update_force_plot(customer_id):
+        fig = plot_waterfall(customer_id)
+    
+    
     # Run the dashboard
     app.run_server()
 
@@ -117,9 +135,46 @@ def load_decisions(thres):
         lambda x : {'label': str(x), 'value':x})
     
     return df_decision
+
+
+def load_customer_data(n_sample=None):
+    """
+    Load dataset containing customer information (after feature engineering).
+    Dataset is restricted to the n_sample-th first customers.
+    """
+    
+    df_cust = pd.read_pickle('../data/data_outputs/feature_engineered/cleaned_dataset_test.pkl')
+    df_cust.index = df_cust['SK_ID_CURR']
+    l_drop = ['TARGET','SK_ID_CURR','SK_ID_BUREAU','SK_ID_PREV','index', 'source']
+    feats = [f for f in df_cust.columns if f not in l_drop]
+    df_cust=df_cust[feats]
+    
+    if n_sample != None :
+        df_cust = df_cust.iloc[:n_sample]
+    
+    return df_cust
+
+
+def load_shap_values(n_sample=None):
+    """
+    Load dataset containing shap values for each customer.
+    Dataset is restricted to the n_sample-th first customers.
+    """
+    
+    df_shap = pd.read_csv('../03_interpretability/test_shap_values.csv')
+    df_shap.index=df_shap['SK_ID_CURR']
+    df_shap = df_shap.drop(columns = ['SK_ID_CURR'])
+    
+    if n_sample != None :
+        df_shap = df_shap.iloc[:n_sample]
+    
+    return df_shap
+
     
 def plot_panel(thres):
-    
+    """
+    Display estimated risk on a representative panel of customers.
+    """
     # Plot customer risk distribution
     df_decision = load_decisions(thres=thres)
     fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
@@ -134,3 +189,33 @@ def plot_panel(thres):
                        x=thres, y=15)
     
     return fig
+
+def plot_waterfall(customer_id):
+    """
+    """
+    # Load data
+    df_shap = load_shap_values()   
+    
+    # Set data for waterfall
+    df_waterfall = pd.DataFrame(df_shap.loc[customer_id])
+    df_waterfall.columns = ['values']
+    df_waterfall['abs']=df_waterfall['values'].apply('abs')
+    df_waterfall.sort_values(by='abs', inplace=True)
+    
+    # Aggregate shap values not in top 20
+    df_top=df_waterfall.tail(20)
+    df_others = pd.DataFrame(df_waterfall.iloc[:-20].sum(axis=0)).T
+    df_others.index = ['others']
+    df_waterfall = df_others.append(df_top)
+    
+    # Plot waterfall
+    fig = go.Figure(go.Waterfall(
+        base = 2.952,
+        orientation = 'h',
+        y=df_waterfall.index,
+        x=df_waterfall['values']
+    ))
+    
+    return fig
+
+    
