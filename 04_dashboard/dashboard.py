@@ -5,7 +5,6 @@ This script generate an interpretability dashboard for explaining why a customer
 was granted the loan he/she applied for.
 """
 
-
 import pandas as pd
 import numpy as np
 import shap
@@ -37,8 +36,8 @@ def generate(thres=0.5, n_sample = 1000):
     
     # Load data
     df_decision = load_decisions(thres=thres)
-    #df_cust = load_customer_data(n_sample=n_sample)
-    #df_shap = load_shap_values(n_sample=n_sample)
+    logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
+        'logo%20projet%20fintech.png'
 
     # Dashboard layout
     app.layout = html.Div(children=[
@@ -46,7 +45,7 @@ def generate(thres=0.5, n_sample = 1000):
         # Dash title
         html.Div(
             [html.Div(
-                [html.Img(src='https://user.oc-static.com/upload/2019/02/25/15510866018677_logo%20projet%20fintech.png')],
+                [html.Img(src=logo)],
                 className="one-third column"),
             html.Div(
                 [html.H1(children='Decision-making dashboard')],
@@ -84,13 +83,18 @@ def generate(thres=0.5, n_sample = 1000):
     )
     
     def update_decision_outputs(customer_id):
-        
+        """
+        Display loan decision and the evaluated risk for a given customer
+        """
+        # Classification
         decision = df_decision[df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
+        decision = 'granted' if decision else 'denied'
+        
+        # Risk estimation
         risk = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
         
-        decision = 'granted' if decision else 'denied'
+        # Output
         output = 'Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
-        
         return output
     
     
@@ -101,13 +105,19 @@ def generate(thres=0.5, n_sample = 1000):
     )
     
     def update_panel(customer_id):
+        """
+        Highlight customer's bin in the evaluated risk distribution 
+        """
+        # Plot risk distribution
         fig = plot_panel(thres)
         
+        # Find customer's bin
         cust_target = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
         heights = np.histogram(df_decision['TARGET'], bins=np.arange(0,1,0.01))[0]
         heights = heights/heights.sum()
         cust_height = 100*heights[int(cust_target//0.01)]
 
+        # Highlight customer's bin
         fig.add_shape(type='rect',x0=cust_target//0.01/100, 
                   x1=cust_target//0.01/100 + 0.01, 
                   y0=0, y1=cust_height, fillcolor='yellow')
@@ -122,6 +132,9 @@ def generate(thres=0.5, n_sample = 1000):
     )
     
     def update_waterfall(customer_id):
+        """
+        Display waterfall to explain loan decision for a given customer.
+        """
         fig = plot_waterfall(customer_id, thres=thres)
         return fig
     
@@ -134,9 +147,11 @@ def load_decisions(thres):
     """
     Load submissions made on the test set and prepare data for dashboard.
     """
-    
+    # Load dataset and set decision with the threshold
     df_decision = pd.read_csv('../02_classification/submission.csv')
     df_decision['LOAN'] = df_decision['TARGET']<thres
+    
+    # Dict for customer selection
     df_decision['option'] = df_decision['SK_ID_CURR'].apply(
         lambda x : {'label': str(x), 'value':x})
     
@@ -148,9 +163,13 @@ def load_customer_data(n_sample=None):
     Load dataset containing customer information (after feature engineering).
     Dataset is restricted to the n_sample-th first customers.
     """
-    
-    df_cust = pd.read_pickle('../data/data_outputs/feature_engineered/cleaned_dataset_test.pkl')
+    # Load data
+    df_cust=pd.read_pickle(
+        '../data/data_outputs/feature_engineered/cleaned_dataset_test.pkl')
+
     df_cust.index = df_cust['SK_ID_CURR']
+    
+    # Select features and sample dataset
     l_drop = ['TARGET','SK_ID_CURR','SK_ID_BUREAU','SK_ID_PREV','index', 'source']
     feats = [f for f in df_cust.columns if f not in l_drop]
     df_cust=df_cust[feats]
@@ -166,11 +185,12 @@ def load_shap_values(n_sample=None):
     Load dataset containing shap values for each customer.
     Dataset is restricted to the n_sample-th first customers.
     """
-    
+    # Load data
     df_shap = pd.read_csv('../03_interpretability/test_shap_values.csv')
     df_shap.index=df_shap['SK_ID_CURR']
     df_shap = df_shap.drop(columns = ['SK_ID_CURR'])
     
+    # Sample dataset
     if n_sample != None :
         df_shap = df_shap.iloc[:n_sample]
     
@@ -199,6 +219,7 @@ def plot_panel(thres):
 
 def find_base_value(thres):
     """
+    Calculate shapley base value based on the threshold.
     """
     # Find ID of last granted and first denied
     df_decision = load_decisions(thres)
@@ -206,16 +227,10 @@ def find_base_value(thres):
     last_granted = df_decision[df_decision['LOAN']]['SK_ID_CURR'].tail(1).values[0]
     first_denied = df_decision[~df_decision['LOAN']]['SK_ID_CURR'].head(1).values[0]
     
-    print(last_granted)
-    print(first_denied)
-    
     # Calculate respective total SHAP values
     df_shap = load_shap_values()
     last_shap = df_shap.loc[last_granted].sum()
     first_shap = df_shap.loc[first_denied].sum()
-    
-    print(last_shap)
-    print(first_shap)
     
     # Base value
     base = -(last_shap+first_shap)/2
@@ -224,6 +239,7 @@ def find_base_value(thres):
 
 def plot_waterfall(customer_id, thres):
     """
+    Calculate waterfall based on shapley values.
     """
     # Load data
     df_shap = load_shap_values()   
@@ -252,8 +268,7 @@ def plot_waterfall(customer_id, thres):
         layout = go.Layout(height=600, width=800)
     )
     
-    # Add base value and final result
-    
+    # Add base value and final result on the plot
     fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
     fig.add_annotation(text='Base value', x=base_value, y=0)
     
@@ -263,7 +278,8 @@ def plot_waterfall(customer_id, thres):
                        x=final_value, y=21)
     
     # Threshold line
-    fig.add_shape(type='line', x0=0, x1=0, y0=-1, y1=21, line_color='red', line_dash='dot')
+    fig.add_shape(type='line', x0=0, x1=0, y0=-1, y1=21, 
+                  line_color='red', line_dash='dot')
     
     return fig
 
