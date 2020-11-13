@@ -193,6 +193,7 @@ def plot_panel(thres):
     
     return fig
 
+
 def plot_waterfall(customer_id):
     """
     """
@@ -220,6 +221,16 @@ def plot_waterfall(customer_id):
             x=df_waterfall['values']),
         layout = go.Layout(height=600, width=800)
     )
+    
+    # Add base value and final result
+    base_value = 2.952
+    fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
+    fig.add_annotation(text='Base value', x=base_value, y=0)
+    
+    final_value = df_waterfall['values'].sum() + base_value
+    fig.add_shape(type='line', x0=final_value, x1=final_value, y0=20, y1=21)
+    fig.add_annotation(text='score = {:.3}'.format(final_value), 
+                       x=final_value, y=21)
     
     return fig
 
