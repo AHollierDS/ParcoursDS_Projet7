@@ -122,7 +122,7 @@ def generate(thres=0.5, n_sample = 1000):
     )
     
     def update_waterfall(customer_id):
-        fig = plot_waterfall(customer_id)
+        fig = plot_waterfall(customer_id, thres=thres)
         return fig
     
     
@@ -197,7 +197,32 @@ def plot_panel(thres):
     return fig
 
 
-def plot_waterfall(customer_id):
+def find_base_value(thres):
+    """
+    """
+    # Find ID of last granted and first denied
+    df_decision = load_decisions(thres)
+    df_decision.sort_values(by='TARGET', inplace=True)
+    last_granted = df_decision[df_decision['LOAN']]['SK_ID_CURR'].tail(1).values[0]
+    first_denied = df_decision[~df_decision['LOAN']]['SK_ID_CURR'].head(1).values[0]
+    
+    print(last_granted)
+    print(first_denied)
+    
+    # Calculate respective total SHAP values
+    df_shap = load_shap_values()
+    last_shap = df_shap.loc[last_granted].sum()
+    first_shap = df_shap.loc[first_denied].sum()
+    
+    print(last_shap)
+    print(first_shap)
+    
+    # Base value
+    base = -(last_shap+first_shap)/2
+    return base
+
+
+def plot_waterfall(customer_id, thres):
     """
     """
     # Load data
@@ -215,7 +240,7 @@ def plot_waterfall(customer_id):
     df_others.index = ['others']
     df_waterfall = df_others.append(df_top)
     
-    base_value = 2.08
+    base_value = find_base_value(thres)
     
     # Plot waterfall
     fig = go.Figure(
