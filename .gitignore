@@ -1,0 +1,10 @@
+*cpython-37.pyc
+*-checkpoint.py
+*-checkpoint.ipynb
+*.ipynb_checkpoints
+*.zip
+*.csv
+*.pkl
+*.png
+*.pbix
+~$*.pptx
