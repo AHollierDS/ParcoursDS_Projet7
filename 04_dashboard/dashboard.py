@@ -39,7 +39,15 @@ def generate(thres=0.5):
     app.layout = html.Div(children=[
         
         # Dash title
-        html.H1(children='Decision-making dashboard'),
+        html.Div(
+            [html.Div(
+                [html.Img(src='https://user.oc-static.com/upload/2019/02/25/15510866018677_logo%20projet%20fintech.png')],
+                className="one-third column"),
+            html.Div(
+                [html.H1(children='Decision-making dashboard')],
+                className='one-half column'),
+            ],className='row flex-display'),
+        
         html.Div(children='Select a customer ID to explain why granted/denied the loan'),
         
         # Customer selection and decision
