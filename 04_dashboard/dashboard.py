@@ -117,15 +117,12 @@ def plot_panel(thres):
     fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
                   title='Distribution of estimated risk on a representative panel',
                   labels={'TARGET':'Estimated risk'})
-    fig.update_layout(yaxis_title='% of customers')
+    fig.update_layout(yaxis_title='% of customers', xaxis_tickformat = ',.0%')
     
     # Display threshold
     fig.add_shape(type='line', x0=thres, x1=thres, y0=0, y1=15, 
                   line_color='red', line_dash='dot')
     fig.add_annotation(text='Maximum allowed risk ({:.1%})'.format(thres),
                        x=thres, y=15)
-    
-    # Display customer position
-    
     
     return fig
