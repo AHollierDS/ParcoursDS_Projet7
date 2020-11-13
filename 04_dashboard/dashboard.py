@@ -30,10 +30,7 @@ def generate(thres=0.5):
     app = dash.Dash()
     
     # Load data
-    df_decision = pd.read_csv('../02_classification/submission.csv')
-    df_decision['LOAN'] = df_decision['TARGET']<thres
-    df_decision['option'] = df_decision['SK_ID_CURR'].apply(
-        lambda x : {'label': str(x), 'value':str(x)})
+    df_decision = load_decisions(thres=thres)
 
     # Dashboard layout
     app.layout = html.Div(children=[
@@ -51,3 +48,17 @@ def generate(thres=0.5):
     
     # Run the dashboard
     app.run_server()
+
+    
+def load_decisions(thres):
+    """
+    Load submissions made on the test set and prepare data for dashboard.
+    """
+    
+    df_decision = pd.read_csv('../02_classification/submission.csv')
+    df_decision['LOAN'] = df_decision['TARGET']<thres
+    df_decision['option'] = df_decision['SK_ID_CURR'].apply(
+        lambda x : {'label': str(x), 'value':str(x)})
+    
+    return df_decision
+    
