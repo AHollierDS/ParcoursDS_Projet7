@@ -82,6 +82,7 @@ def generate(thres=0.5, n_sample = 1000):
         Output(component_id='customer_decision', component_property='children'),
         Input(component_id='customer_selection', component_property='value')
     )
+    
     def update_decision_outputs(customer_id):
         
         decision = df_decision[df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
@@ -97,6 +98,7 @@ def generate(thres=0.5, n_sample = 1000):
          Output(component_id='panel', component_property='figure'),
          Input(component_id='customer_selection', component_property='value')
     )
+    
     def update_panel(customer_id):
         fig = plot_panel(thres)
         
@@ -116,6 +118,7 @@ def generate(thres=0.5, n_sample = 1000):
          Output(component_id='force_plot', component_property='figure'),
          Input(component_id='customer_selection', component_property='value')
     )
+    
     def update_force_plot(customer_id):
         fig = plot_waterfall(customer_id)
     
@@ -209,12 +212,14 @@ def plot_waterfall(customer_id):
     df_waterfall = df_others.append(df_top)
     
     # Plot waterfall
-    fig = go.Figure(go.Waterfall(
-        base = 2.952,
-        orientation = 'h',
-        y=df_waterfall.index,
-        x=df_waterfall['values']
-    ))
+    fig = go.Figure(
+        go.Waterfall(
+            base = 2.952,
+            orientation = 'h',
+            y=df_waterfall.index,
+            x=df_waterfall['values']),
+        layout = go.Layout(height=600, width=800)
+    )
     
     return fig
 
