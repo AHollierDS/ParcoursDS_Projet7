@@ -71,7 +71,7 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Waterfall plot
         html.H2(children='Waterfall for selected customer'),
-        dcc.Graph(id='force_plot', figure=plot_waterfall(100001))
+        dcc.Graph(id='waterfall')
         
     ])
 
@@ -93,6 +93,7 @@ def generate(thres=0.5, n_sample = 1000):
         
         return output
     
+    
     # Panel figure
     @app.callback(
          Output(component_id='panel', component_property='figure'),
@@ -113,14 +114,16 @@ def generate(thres=0.5, n_sample = 1000):
         
         return fig
     
-    # Force plot
+    
+    # Waterfall plot
     @app.callback(
-         Output(component_id='force_plot', component_property='figure'),
+         Output(component_id='waterfall', component_property='figure'),
          Input(component_id='customer_selection', component_property='value')
     )
     
-    def update_force_plot(customer_id):
+    def update_waterfall(customer_id):
         fig = plot_waterfall(customer_id)
+        return fig
     
     
     # Run the dashboard
@@ -212,10 +215,12 @@ def plot_waterfall(customer_id):
     df_others.index = ['others']
     df_waterfall = df_others.append(df_top)
     
+    base_value = 2.08
+    
     # Plot waterfall
     fig = go.Figure(
         go.Waterfall(
-            base = 2.952,
+            base = base_value,
             orientation = 'h',
             y=df_waterfall.index,
             x=df_waterfall['values']),
@@ -223,7 +228,7 @@ def plot_waterfall(customer_id):
     )
     
     # Add base value and final result
-    base_value = 2.952
+    
     fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
     fig.add_annotation(text='Base value', x=base_value, y=0)
     
@@ -231,6 +236,9 @@ def plot_waterfall(customer_id):
     fig.add_shape(type='line', x0=final_value, x1=final_value, y0=20, y1=21)
     fig.add_annotation(text='score = {:.3}'.format(final_value), 
                        x=final_value, y=21)
+    
+    # Threshold line
+    fig.add_shape(type='line', x0=0, x1=0, y0=-1, y1=21, line_color='red', line_dash='dot')
     
     return fig
 
