@@ -78,6 +78,11 @@ def load_criteria_descriptions():
         '../data/data_inputs/HomeCredit_columns_description.csv', 
         encoding ='cp1252', usecols=[2,3])
 
+    # Drop customer id and target
+    l_drop = ['SK_ID_CURR', 'TARGET']
+    df_crit=df_crit[~df_crit['Row'].isin(l_drop)]
+    
+    # Define options for dropdown
     df_crit['options']=df_crit['Row'].apply(lambda x: {'label':x, 'value':x})
     
     return df_crit
