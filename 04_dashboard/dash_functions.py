@@ -16,6 +16,16 @@ import plotly.graph_objs as go
 def load_decisions(thres, n_sample=None):
     """
     Load submissions made on the test set and prepare data for dashboard.
+    
+    params:
+        thres:
+            Threshold risk value above which a customer's loan is denied.
+        n_sample : 
+            Number of customers to include in the dataset.
+            If None, all customers are included.
+    
+    returns:
+        A DataFrame containing estimated risk and loan verdict for each customer.     
     """
     # Load dataset and set decision with the threshold
     df_decision = pd.read_csv('../02_classification/submission.csv')
@@ -34,6 +44,14 @@ def load_customer_data(n_sample=None):
     """
     Load dataset containing customer information (after feature engineering).
     Dataset is restricted to the n_sample-th first customers.
+    
+    params:
+        n_sample : 
+            Number of customers to include in the dataset.
+            If None, all customers are included.
+    
+    returns:
+        A DataFrame containing preprocessed data describing all customers.
     """
     # Load data
     df_cust=pd.read_pickle(
@@ -56,6 +74,14 @@ def load_shap_values(n_sample=None):
     """
     Load dataset containing shap values for each customer.
     Dataset is restricted to the n_sample-th first customers.
+    
+    params:
+        n_sample : 
+            Number of customers to include in the dataset.
+            If None, all customers are included.
+    
+    returns:
+        A DataFrame containing shapley values for all criteria per customer.
     """
     # Load data
     df_shap = pd.read_csv('../03_interpretability/test_shap_values.csv')
@@ -72,6 +98,9 @@ def load_shap_values(n_sample=None):
 def load_criteria_descriptions():
     """
     Load a table containing description of each criteria.
+    
+    returns:
+        Filtered HomeCredit columns description provided for the project.
     """
     # Load data
     df_crit = pd.read_csv(
@@ -91,6 +120,15 @@ def load_criteria_descriptions():
 def plot_panel(df_decision, thres):
     """
     Display estimated risk on a representative panel of customers.
+    
+    params:
+        df_decision:
+            A loan decision DataFrame.
+        thres:
+            Threshold risk value above which a customer's loan is denied.
+            
+    returns:
+        A figure displaying distribution of estimated risk on the panel.
     """
     # Plot customer risk distribution
     fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
@@ -110,6 +148,17 @@ def plot_panel(df_decision, thres):
 def find_base_value(df_decision, df_shap, thres):
     """
     Calculate shapley base value based on the threshold.
+    
+    params:
+        df_decision:
+            A loan decision DataFrame.
+        df_shap:
+            A Shapley values DataFrame.
+        thres:
+            Threshold risk value above which a customer's loan is denied.
+            
+    returns:
+        Initial score in the waterfall. 
     """
     # Find ID of last granted and first denied
     df_decision.sort_values(by='TARGET', inplace=True)
@@ -127,7 +176,22 @@ def find_base_value(df_decision, df_shap, thres):
 
 def plot_waterfall(df_decision, df_shap, customer_id, thres):
     """
-    Calculate waterfall based on shapley values.
+    Calculate waterfall based on shapley values for a given customer.
+    
+    params:
+        df_decision:
+            A loan decision DataFrame.
+        df_shap:
+            A Shapley values DataFrame.
+        customer_id :
+            The SK_ID_CURR value of the customer for whom application decision
+            will be explained.
+        thres:
+            Threshold risk value above which a customer's loan is denied.
+            
+    returns:
+        The waterfall figure for selected customer.
+        Loan applications with a final score below 0 are denied.
     """ 
     # Set data for waterfall
     df_waterfall = pd.DataFrame(df_shap.loc[customer_id])
@@ -173,7 +237,20 @@ def plot_waterfall(df_decision, df_shap, customer_id, thres):
 
 def generate_top_tables(df_cust, df_shap, customer_id):
     """
-    For a given customer id, retrieves the 15 criteria having most impact on loan decision
+    For a given customer id, retrieves the 15 criteria having most impact on loan decision.
+    
+    params:
+        df_cust:
+            A customer description DataFrame.
+        df_shap:
+            A Shapley values DataFrame.
+        customer_id :
+            The SK_ID_CURR value of the customer for whom main criteria are searched.
+    
+    returns:
+        Two tables of main criteria :
+        - Top 15 decisive criteria for selected customer;
+        - Top 15 decisive overall criteria compared to the customer values.
     """
     # Retrieve shap values for selected customer 
     df_1 = df_shap.loc[[customer_id]].T
@@ -235,13 +312,17 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
     Shows evolution of SHAP value depending on selected criteria's value.
     
     params:
+        df_cust:
+            A customer description DataFrame.
+        df_shap:
+            A Shapley values DataFrame.
         crit:
             The criteria to we want to plot.
         cust:
             A customer's ID.
             If not None, shows where the selected customer stands on the plot.
             
-    return:
+    returns:
         A partial dependence plot, where x is the criteria value and y the SHAP value.
     """
     # Shap values

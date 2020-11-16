@@ -23,7 +23,8 @@ def generate(thres=0.5, n_sample=10000):
         thres:
             Threshold risk value above which a customer's loan is denied.
         n_sample : 
-            Number of customers to include in the dashboard
+            Number of customers to include in the dashboard.
+            If None, all customers are included.
             
     returns:
         a web application displaying the interpretability dashboard
@@ -55,7 +56,7 @@ def generate(thres=0.5, n_sample=10000):
                 className='one-half column'),
             ],className='row flex-display'),
         
-        html.Div(children='Select a customer ID to explain why granted/denied the loan'),
+        html.Div(children='Select a customer ID to explain why granted/denied loan'),
         
         # Customer selection and decision
         html.H2('Customer selection :'),
@@ -69,7 +70,8 @@ def generate(thres=0.5, n_sample=10000):
         
         # Customer position vs customers panel
         html.H2(children='Customer position in customer panel'),
-        dcc.Graph(id='panel', figure=dash_functions.plot_panel(df_decision, thres)),
+        dcc.Graph(id='panel', 
+                  figure=dash_functions.plot_panel(df_decision, thres)),
         
         # Waterfall plot
         html.H2(children='Waterfall for selected customer'),
@@ -81,23 +83,24 @@ def generate(thres=0.5, n_sample=10000):
         
         # Criteria selection and description
         html.H2(children='Criteria description'),
+        
         html.Div(
             children=[
                 html.H3(children='Select a criteria'),
-                dcc.Dropdown(id='crit_selection',options=df_crit['options'].tolist()),
+                dcc.Dropdown(
+                    id='crit_selection',
+                    options=df_crit['options'].tolist()),
+                
                 html.H3(children='Description :'),    
                 html.Div(id='crit_descr') 
-            ], 
-            className='one-third column'),
+            ], className='one-third column'),
         
         # Shap vs value scatter plot
         html.Div(
             children=[
                 html.H3(id='scatter_title'),
                 dcc.Graph(id='scatter_plot')
-            ],
-            className='one-half column')
-       
+            ], className='one-half column')
         
     ])
 
@@ -118,16 +121,25 @@ def generate(thres=0.5, n_sample=10000):
         when a customer is selected in dropdown.
         """
         # Update loan decison
-        decision = df_decision[df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
+        decision = df_decision[
+            df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
+        
         decision = 'granted' if decision else 'denied'
-        risk = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
-        decision_output = 'Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
+        
+        risk = df_decision[
+            df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
+        
+        decision_output='Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
         
         # Update customer panel
         fig_panel = dash_functions.plot_panel(df_decision, thres)
         
-        cust_target = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
-        heights = np.histogram(df_decision['TARGET'], bins=np.arange(0,1,0.01))[0]
+        cust_target = df_decision[
+            df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
+        
+        heights = np.histogram(
+            df_decision['TARGET'], bins=np.arange(0,1,0.01))[0]
+        
         heights = heights/heights.sum()
         cust_height = 100*heights[int(cust_target//0.01)]
         
@@ -136,10 +148,12 @@ def generate(thres=0.5, n_sample=10000):
                   y0=0, y1=cust_height, fillcolor='yellow')
         
         # Update waterfall
-        fig_waterfall = dash_functions.plot_waterfall(df_decision, df_shap, customer_id, thres=thres)
+        fig_waterfall = dash_functions.plot_waterfall(
+            df_decision, df_shap, customer_id, thres=thres)
         
         # Update top 15 tables
-        children_top = dash_functions.generate_top_tables(df_cust, df_shap, customer_id)
+        children_top = dash_functions.generate_top_tables(
+            df_cust, df_shap, customer_id)
         
         return decision_output, fig_panel, fig_waterfall, children_top
     
