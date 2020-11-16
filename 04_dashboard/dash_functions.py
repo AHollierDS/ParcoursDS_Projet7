@@ -179,14 +179,16 @@ def generate_top_tables(customer_id):
     df_table_c = df_table_c.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     
     child_c = [
-        html.H3(children='Top 15 criteria - Selected customer'),
-        html.Table([
-            html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
-            html.Tbody([
-                html.Tr([html.Td(df_table_c.iloc[i][col]) for col in df_table_c.columns
-                ]) for i in range(len(df_table_c))])
-        ])
-    ]
+        html.Div(children=[
+            html.H3(children='Top 15 criteria - Selected customer'),
+            html.Table([
+                html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
+                html.Tbody([
+                    html.Tr([html.Td(df_table_c.iloc[i][col]) for col in df_table_c.columns
+                    ]) for i in range(len(df_table_c))])
+                ])
+        ], className='one-half column'
+    )]
     
     # Top 15 table sorted by mean absolute impact for all customers
     overall_top = df_shap.apply('abs').mean().sort_values(ascending=False).head(15)
@@ -197,14 +199,16 @@ def generate_top_tables(customer_id):
     df_overall = df_overall[['criteria', 'mean abs impact', 'customer values', 'impact']]
 
     child_o = [
-        html.H3(children='Top 15 criteria - Overall'),
-        html.Table([
-            html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
-            html.Tbody([
-                html.Tr([html.Td(df_overall.iloc[i][col]) for col in df_overall.columns
-                ]) for i in range(len(df_overall))])
-        ])
-    ]
+        html.Div(children=[
+            html.H3(children='Top 15 criteria - Overall'),
+            html.Table([
+                html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
+                html.Tbody([
+                    html.Tr([html.Td(df_overall.iloc[i][col]) for col in df_overall.columns
+                    ]) for i in range(len(df_overall))])
+            ])
+        ], className='one-half column'
+    )]
     
     # Append and return children
     children=child_c+child_o
