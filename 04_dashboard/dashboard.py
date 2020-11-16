@@ -79,10 +79,13 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Criteria selection and description
         html.H2(children='Criteria description'),
+        html.H3(children='Select a criteria'),
         dcc.Dropdown(
-            id='criteria_selection',
+            id='crit_selection',
             options=df_crit['options'].tolist()
         ),
+        html.H3(children='Description :'),    
+        html.Div(id='crit_descr')
         
     ])
 
@@ -163,6 +166,19 @@ def generate(thres=0.5, n_sample = 1000):
         children = dash_functions.generate_top_tables(customer_id)
         #children = [html.H3('test'), html.H4('test aussi')]
         return children
+    
+    
+    # Criteria description
+    @app.callback(
+        Output(component_id='crit_descr', component_property='children'),
+        Input(component_id='crit_selection', component_property='value')
+    )
+    
+    def update_description(crit):
+        """
+        """
+        output = df_crit[df_crit['Row']==crit]['Description'].values[0]
+        return output
     
     
     # Run the dashboard
