@@ -79,13 +79,20 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Criteria selection and description
         html.H2(children='Criteria description'),
-        html.H3(children='Select a criteria'),
-        dcc.Dropdown(
-            id='crit_selection',
-            options=df_crit['options'].tolist()
-        ),
-        html.H3(children='Description :'),    
-        html.Div(id='crit_descr')
+        html.Div(
+            children=[
+                html.H3(children='Select a criteria'),
+                dcc.Dropdown(id='crit_selection',options=df_crit['options'].tolist())
+            ], 
+            className='one-third column'),
+        
+        html.Div(
+            children=[
+                html.H3(children='Description :'),    
+                html.Div(id='crit_descr') 
+            ],
+            className='one-third column')
+       
         
     ])
 
