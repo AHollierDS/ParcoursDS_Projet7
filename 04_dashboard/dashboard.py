@@ -82,16 +82,19 @@ def generate(thres=0.5, n_sample = 1000):
         html.Div(
             children=[
                 html.H3(children='Select a criteria'),
-                dcc.Dropdown(id='crit_selection',options=df_crit['options'].tolist())
+                dcc.Dropdown(id='crit_selection',options=df_crit['options'].tolist()),
+                html.H3(children='Description :'),    
+                html.Div(id='crit_descr') 
             ], 
             className='one-third column'),
         
+        # Shap vs value scatter plot
         html.Div(
             children=[
-                html.H3(children='Description :'),    
-                html.Div(id='crit_descr') 
+                html.H3(id='scatter_title'),
+                dcc.Graph(id='scatter_plot')
             ],
-            className='one-third column')
+            className='one-half column')
        
         
     ])
@@ -187,6 +190,17 @@ def generate(thres=0.5, n_sample = 1000):
         output = df_crit[df_crit['Row']==crit]['Description'].values[0]
         return output
     
+    # Shap/value scatter plot
+    @app.callback(
+        Output(component_id='scatter_plot', component_property='figure'),
+        Input(component_id='crit_selection', component_property='value')
+    )
+    
+    def update_scatter(crit):
+        """
+        """
+        fig=dash_functions.plot_shap_scatter(crit)
+        return fig
     
     # Run the dashboard
     app.run_server()

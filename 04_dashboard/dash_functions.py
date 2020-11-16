@@ -228,3 +228,28 @@ def generate_top_tables(customer_id):
     children=child_c+child_o
     return children
 
+def plot_shap_scatter(crit):
+    """
+    """
+    # Shap values
+    df_shap=load_shap_values()
+    s_shap=df_shap[[crit]].copy()
+    s_shap.columns=['shap_value']
+    
+    # Criteria values
+    df_cust=load_customer_data()
+    s_vals = df_cust[[crit]].copy()
+    s_vals.columns=['crit_value']
+    
+    # Join data & visualization
+    df_summary = s_shap.join(s_vals)
+    fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.1)
+    
+    # Selected customer data
+    #df_summary['selected_customer'] = df_summary.index==cust
+    #cust_value=df_summary[df_summary['selected_customer']]['crit_value'].values[0]
+    #cust_shap=df_summary[df_summary['selected_customer']]['shap_value'].values[0]
+    
+    return fig
+
+    
