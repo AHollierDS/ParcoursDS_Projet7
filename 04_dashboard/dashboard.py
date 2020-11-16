@@ -72,8 +72,8 @@ def generate(thres=0.5, n_sample = 1000):
         dcc.Graph(id='waterfall'),
         
         # Top criteria for selected customer
-        html.H2(children='Most important criteria for selected customer'),
-        html.Table(id='table_customer')
+        html.H2(children='Most important criteria'),
+        html.Div(id='top_tables')
         
     ])
 
@@ -144,14 +144,15 @@ def generate(thres=0.5, n_sample = 1000):
     
     # Criteria tables
     @app.callback(
-        Output(component_id='table_customer', component_property='children'),
+        Output(component_id='top_tables', component_property='children'),
         Input(component_id='customer_selection', component_property='value')
     )
     
-    def update_customer_table(customer_id):
+    def update_top_tables(customer_id):
         """
         """
-        children = dash_functions.generate_customer_table(customer_id)
+        children = dash_functions.generate_top_tables(customer_id)
+        #children = [html.H3('test'), html.H4('test aussi')]
         return children
     
     

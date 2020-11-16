@@ -154,7 +154,7 @@ def plot_waterfall(customer_id, thres):
     return fig
 
 
-def generate_customer_table(customer_id):
+def generate_top_tables(customer_id):
     """
     For a given customer id, retrieves the 15 criteria having most impact on loan decision
     """
@@ -179,10 +179,13 @@ def generate_customer_table(customer_id):
     df_table_c = df_table_c.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     
     child_c = [
-        html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
-        html.Tbody([
-            html.Tr([html.Td(df_table_c.iloc[i][col]) for col in df_table_c.columns
-            ]) for i in range(len(df_table_c))])
+        html.H3(children='Top 15 criteria - Selected customer'),
+        html.Table([
+            html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
+            html.Tbody([
+                html.Tr([html.Td(df_table_c.iloc[i][col]) for col in df_table_c.columns
+                ]) for i in range(len(df_table_c))])
+        ])
     ]
     
     # Top 15 table sorted by mean absolute impact for all customers
@@ -191,13 +194,16 @@ def generate_customer_table(customer_id):
     df_overall['mean abs impact'] = overall_top
     df_overall['criteria'] = df_overall.index
     df_overall = df_overall.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
-    df_overall = df_overall[['criteria', 'mean abs impact', 'customer values', 'shap values']]
+    df_overall = df_overall[['criteria', 'mean abs impact', 'customer values', 'impact']]
 
     child_o = [
-        html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
-        html.Tbody([
-            html.Tr([html.Td(df_overall.iloc[i][col]) for col in df_overall.columns
-            ]) for i in range(len(df_overall))])
+        html.H3(children='Top 15 criteria - Overall'),
+        html.Table([
+            html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
+            html.Tbody([
+                html.Tr([html.Td(df_overall.iloc[i][col]) for col in df_overall.columns
+                ]) for i in range(len(df_overall))])
+        ])
     ]
     
     # Append and return children
