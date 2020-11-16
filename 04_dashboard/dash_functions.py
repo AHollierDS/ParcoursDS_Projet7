@@ -168,7 +168,7 @@ def plot_waterfall(df_decision, customer_id, thres):
     return fig
 
 
-def generate_top_tables(customer_id):
+def generate_top_tables(df_cust, customer_id):
     """
     For a given customer id, retrieves the 15 criteria having most impact on loan decision
     """
@@ -178,7 +178,7 @@ def generate_top_tables(customer_id):
     df_1.columns=['impact']
 
     # Retrieve criteria values for selected customer
-    df_cust = load_customer_data()
+    #df_cust = load_customer_data()
     df_2 = df_cust.loc[[customer_id]].T
     df_2.columns=['customer values']
 
@@ -229,7 +229,7 @@ def generate_top_tables(customer_id):
     return children
 
 
-def plot_shap_scatter(crit, cust):
+def plot_shap_scatter(df_cust, crit, cust):
     """
     Shows evolution of SHAP value depending on selected criteria's value.
     
@@ -249,7 +249,7 @@ def plot_shap_scatter(crit, cust):
     s_shap.columns=['shap_value']
     
     # Criteria values
-    df_cust=load_customer_data()
+    #df_cust=load_customer_data()
     s_vals = df_cust[[crit]].copy()
     s_vals.columns=['crit_value']
     

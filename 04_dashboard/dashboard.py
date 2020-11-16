@@ -175,8 +175,7 @@ def generate(thres=0.5, n_sample = 10000):
     def update_top_tables(customer_id):
         """
         """
-        children = dash_functions.generate_top_tables(customer_id)
-        #children = [html.H3('test'), html.H4('test aussi')]
+        children = dash_functions.generate_top_tables(df_cust, customer_id)
         return children
     
     
@@ -204,7 +203,7 @@ def generate(thres=0.5, n_sample = 10000):
         """
         """
         title = f'Evolution of impact with {crit} value :'
-        fig=dash_functions.plot_shap_scatter(crit, cust)
+        fig=dash_functions.plot_shap_scatter(df_cust, crit, cust)
         
         return title, fig
     
