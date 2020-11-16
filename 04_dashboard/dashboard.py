@@ -31,9 +31,11 @@ def generate(thres=0.5, n_sample = 1000):
 
     # Load data
     df_decision = dash_functions.load_decisions(thres=thres)
+    df_crit=dash_functions.load_criteria_descriptions()
+    
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
         'logo%20projet%20fintech.png'
-    headers_list = ['Criteria name', "Customer's value", "Impact"]
+    
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     # Dashboard layout
@@ -73,7 +75,14 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Top criteria for selected customer
         html.H2(children='Most important criteria'),
-        html.Div(id='top_tables')
+        html.Div(id='top_tables'),
+        
+        # Criteria selection and description
+        html.H2(children='Criteria description'),
+        dcc.Dropdown(
+            id='criteria_selection',
+            options=df_crit['options'].tolist()
+        ),
         
     ])
 
