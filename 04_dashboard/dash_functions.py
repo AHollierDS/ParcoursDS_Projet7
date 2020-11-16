@@ -66,6 +66,20 @@ def load_shap_values(n_sample=None):
     
     return df_shap
 
+
+def load_criteria_descriptions():
+    """
+    Load a table containing description of each criteria.
+    """
+    # Load data
+    df_crit = pd.read_csv(
+        '../data/data_inputs/HomeCredit_columns_description.csv', 
+        encoding ='cp1252', usecols=[2,3])
+
+    df_crit['options']=df_crit['Row'].apply(lambda x: {'label':x, 'value':x})
+    
+    return df_crit
+
     
 def plot_panel(thres):
     """
