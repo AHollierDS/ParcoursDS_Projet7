@@ -31,15 +31,17 @@ def generate(thres=0.5, n_sample = 1000):
     returns:
         a web application displaying the interpretability dashboard
     """
-    
-    app = dash.Dash()
-    
+
     # Load data
     df_decision = load_decisions(thres=thres)
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
         'logo%20projet%20fintech.png'
+    headers_list = ['Criteria name', "Customer's value", "Impact"]
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     # Dashboard layout
+    app = dash.Dash(external_stylesheets=external_stylesheets)
+    
     app.layout = html.Div(children=[
         
         # Dash title
@@ -70,7 +72,11 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Waterfall plot
         html.H2(children='Waterfall for selected customer'),
-        dcc.Graph(id='waterfall')
+        dcc.Graph(id='waterfall'),
+        
+        # Top criteria for selected customer
+        html.H2(children='Most important criteria for selected customer'),
+        html.Table(id='table_customer')
         
     ])
 
@@ -137,6 +143,19 @@ def generate(thres=0.5, n_sample = 1000):
         """
         fig = plot_waterfall(customer_id, thres=thres)
         return fig
+    
+    
+    # Criteria tables
+    @app.callback(
+        Output(component_id='table_customer', component_property='children'),
+        Input(component_id='customer_selection', component_property='value')
+    )
+    
+    def update_customer_table(customer_id):
+        """
+        """
+        children = generate_customer_table(customer_id)
+        return children
     
     
     # Run the dashboard
@@ -283,4 +302,38 @@ def plot_waterfall(customer_id, thres):
     
     return fig
 
+
+def generate_customer_table(customer_id):
+    """
+    """
+    # Retrieve shap values for selected customer 
+    df_shap = load_shap_values()
+    df_1 = df_shap.loc[[customer_id]].T
+    df_1.columns=['impact']
+
+    # Retrieve criteria values for selected customer
+    df_cust = load_customer_data()
+    df_2 = df_cust.loc[[customer_id]].T
+    df_2.columns=['customer values']
+
+    # Merge and sort by impact
+    df_table = df_1.merge(df_2, left_index=True, right_index=True)
+    df_table['abs']=df_1['impact'].apply('abs')
+    df_table['criteria'] = df_table.index
+    df_table.sort_values(by='abs', ascending=False, inplace=True)
+    df_table = df_table[['criteria', 'customer values', 'impact']].head(15)
     
+    child = [
+        html.Thead(
+            html.Tr([html.Th(col) for col in df_table.columns])
+        ),
+        html.Tbody([
+            html.Tr([
+                html.Td(df_table.iloc[i][col]) for col in df_table.columns
+            ]) for i in range(len(df_table))
+        ])
+    ]
+    
+    return child 
+    
+        
