@@ -152,6 +152,8 @@ def plot_waterfall(customer_id, thres):
         layout = go.Layout(height=600, width=800)
     )
     
+    fig.update_layout(xaxis_title='Confidence score', yaxis_title = 'Criteria')
+    
     # Add base value and final result on the plot
     fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
     fig.add_annotation(text='Base value', x=base_value, y=0)
@@ -228,6 +230,7 @@ def generate_top_tables(customer_id):
     children=child_c+child_o
     return children
 
+
 def plot_shap_scatter(crit, cust):
     """
     Shows evolution of SHAP value depending on selected criteria's value.
@@ -273,6 +276,8 @@ def plot_shap_scatter(crit, cust):
                       x0=df_summary['crit_value'].min(), x1=cust_value, 
                       y0=cust_shap, y1=cust_shap,
                       line_dash='dot', line_color='red')
+        
+        fig.update_layout(xaxis_title='Criteria value', yaxis_title = 'Impact')
         
     return fig
 
