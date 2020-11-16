@@ -44,7 +44,7 @@ def generate(thres=0.5, n_sample = 1000):
         # Dash title
         html.Div(
             [html.Div(
-                [html.Img(src=logo)],
+                [html.Img(src=logo, width=218, height=200)],
                 className="one-third column"),
             html.Div(
                 [html.H1(children='Decision-making dashboard')],
