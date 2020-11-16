@@ -6,12 +6,12 @@ This script contains functions called by dashboard.py to update the dashboard.
 
 import pandas as pd
 import numpy as np
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objs as go
+
 
 def load_decisions(thres):
     """
@@ -168,24 +168,39 @@ def generate_customer_table(customer_id):
     df_2 = df_cust.loc[[customer_id]].T
     df_2.columns=['customer values']
 
-    # Merge and sort by impact
+    # Merge
     df_table = df_1.merge(df_2, left_index=True, right_index=True)
     df_table['abs']=df_1['impact'].apply('abs')
     df_table['criteria'] = df_table.index
-    df_table.sort_values(by='abs', ascending=False, inplace=True)
-    df_table = df_table[['criteria', 'customer values', 'impact']].head(15)
-    df_table = df_table.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     
-    child = [
-        html.Thead(
-            html.Tr([html.Th(col) for col in df_table.columns])
-        ),
+    # Top 15 table sorted by impact for selected customer
+    df_table_c = df_table.sort_values(by='abs', ascending=False)
+    df_table_c = df_table_c[['criteria', 'customer values', 'impact']].head(15)
+    df_table_c = df_table_c.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
+    
+    child_c = [
+        html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
         html.Tbody([
-            html.Tr([
-                html.Td(df_table.iloc[i][col]) for col in df_table.columns
-            ]) for i in range(len(df_table))
-        ])
+            html.Tr([html.Td(df_table_c.iloc[i][col]) for col in df_table_c.columns
+            ]) for i in range(len(df_table_c))])
     ]
     
-    return child 
+    # Top 15 table sorted by mean absolute impact for all customers
+    overall_top = df_shap.apply('abs').mean().sort_values(ascending=False).head(15)
+    df_overall = df_table.loc[overall_top.index]
+    df_overall['mean abs impact'] = overall_top
+    df_overall['criteria'] = df_overall.index
+    df_overall = df_overall.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
+    df_overall = df_overall[['criteria', 'mean abs impact', 'customer values', 'shap values']]
+
+    child_o = [
+        html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
+        html.Tbody([
+            html.Tr([html.Td(df_overall.iloc[i][col]) for col in df_overall.columns
+            ]) for i in range(len(df_overall))])
+    ]
+    
+    # Append and return children
+    children=child_c+child_o
+    return children
 

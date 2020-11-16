@@ -7,13 +7,12 @@ was granted the loan he/she applied for.
 
 import pandas as pd
 import numpy as np
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
-
 import dash_functions
+
+from dash.dependencies import Input, Output
 
 
 def generate(thres=0.5, n_sample = 1000):
