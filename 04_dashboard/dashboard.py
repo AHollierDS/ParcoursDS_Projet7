@@ -322,6 +322,7 @@ def generate_customer_table(customer_id):
     df_table['criteria'] = df_table.index
     df_table.sort_values(by='abs', ascending=False, inplace=True)
     df_table = df_table[['criteria', 'customer values', 'impact']].head(15)
+    df_table = df_table.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     
     child = [
         html.Thead(
