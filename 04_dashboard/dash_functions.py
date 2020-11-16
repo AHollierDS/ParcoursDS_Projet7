@@ -228,7 +228,7 @@ def generate_top_tables(customer_id):
     children=child_c+child_o
     return children
 
-def plot_shap_scatter(crit):
+def plot_shap_scatter(crit, cust):
     """
     """
     # Shap values
@@ -246,10 +246,23 @@ def plot_shap_scatter(crit):
     fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.1)
     
     # Selected customer data
-    #df_summary['selected_customer'] = df_summary.index==cust
-    #cust_value=df_summary[df_summary['selected_customer']]['crit_value'].values[0]
-    #cust_shap=df_summary[df_summary['selected_customer']]['shap_value'].values[0]
-    
+    if cust is not None:
+        # Customer Shap and value for selected criteria
+        df_summary['selected_customer'] = df_summary.index==cust
+        cust_value=df_summary[df_summary['selected_customer']]['crit_value'].values[0]
+        cust_shap=df_summary[df_summary['selected_customer']]['shap_value'].values[0]
+        
+        # Show selected customer on the plot
+        fig.add_shape(type='line', 
+              x0=cust_value, x1=cust_value, 
+              y0=df_summary['shap_value'].min(), y1=cust_shap,
+              line_dash='dot', line_color='red')
+
+        fig.add_shape(type='line', 
+                      x0=df_summary['crit_value'].min(), x1=cust_value, 
+                      y0=cust_shap, y1=cust_shap,
+                      line_dash='dot', line_color='red')
+        
     return fig
 
     
