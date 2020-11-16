@@ -15,7 +15,7 @@ import dash_functions
 from dash.dependencies import Input, Output
 
 
-def generate(thres=0.5, n_sample = 1000):
+def generate(thres=0.5, n_sample = 10000):
     """
     Build and display the dashboard.
     
@@ -30,8 +30,10 @@ def generate(thres=0.5, n_sample = 1000):
     """
 
     # Load data
-    df_decision = dash_functions.load_decisions(thres=thres)
+    df_decision=dash_functions.load_decisions(thres=thres)
     df_crit=dash_functions.load_criteria_descriptions()
+    df_cust=dash_functions.load_customer_data(n_sample=n_sample)
+    df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
         'logo%20projet%20fintech.png'
@@ -67,7 +69,7 @@ def generate(thres=0.5, n_sample = 1000):
         
         # Customer position vs customers panel
         html.H2(children='Customer position in customer panel'),
-        dcc.Graph(id='panel', figure=dash_functions.plot_panel(thres)),
+        dcc.Graph(id='panel', figure=dash_functions.plot_panel(df_decision, thres)),
         
         # Waterfall plot
         html.H2(children='Waterfall for selected customer'),
@@ -134,7 +136,7 @@ def generate(thres=0.5, n_sample = 1000):
         Highlight customer's bin in the evaluated risk distribution 
         """
         # Plot risk distribution
-        fig = dash_functions.plot_panel(thres)
+        fig = dash_functions.plot_panel(df_decision, thres)
         
         # Find customer's bin
         cust_target = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
@@ -160,7 +162,7 @@ def generate(thres=0.5, n_sample = 1000):
         """
         Display waterfall to explain loan decision for a given customer.
         """
-        fig = dash_functions.plot_waterfall(customer_id, thres=thres)
+        fig = dash_functions.plot_waterfall(df_decision, customer_id, thres=thres)
         return fig
     
     

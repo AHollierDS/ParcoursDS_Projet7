@@ -81,12 +81,11 @@ def load_criteria_descriptions():
     return df_crit
 
     
-def plot_panel(thres):
+def plot_panel(df_decision, thres):
     """
     Display estimated risk on a representative panel of customers.
     """
     # Plot customer risk distribution
-    df_decision = load_decisions(thres=thres)
     fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
                   title='Distribution of estimated risk on a representative panel',
                   labels={'TARGET':'Estimated risk'})
@@ -101,12 +100,11 @@ def plot_panel(thres):
     return fig
 
 
-def find_base_value(thres):
+def find_base_value(df_decision, thres):
     """
     Calculate shapley base value based on the threshold.
     """
     # Find ID of last granted and first denied
-    df_decision = load_decisions(thres)
     df_decision.sort_values(by='TARGET', inplace=True)
     last_granted = df_decision[df_decision['LOAN']]['SK_ID_CURR'].tail(1).values[0]
     first_denied = df_decision[~df_decision['LOAN']]['SK_ID_CURR'].head(1).values[0]
@@ -121,7 +119,7 @@ def find_base_value(thres):
     return base
 
 
-def plot_waterfall(customer_id, thres):
+def plot_waterfall(df_decision, customer_id, thres):
     """
     Calculate waterfall based on shapley values.
     """
@@ -140,7 +138,7 @@ def plot_waterfall(customer_id, thres):
     df_others.index = ['others']
     df_waterfall = df_others.append(df_top)
     
-    base_value = find_base_value(thres)
+    base_value = find_base_value(df_decision, thres)
     
     # Plot waterfall
     fig = go.Figure(
