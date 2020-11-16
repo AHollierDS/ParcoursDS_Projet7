@@ -230,6 +230,17 @@ def generate_top_tables(customer_id):
 
 def plot_shap_scatter(crit, cust):
     """
+    Shows evolution of SHAP value depending on selected criteria's value.
+    
+    params:
+        crit:
+            The criteria to we want to plot.
+        cust:
+            A customer's ID.
+            If not None, shows where the selected customer stands on the plot.
+            
+    return:
+        A partial dependence plot, where x is the criteria value and y the SHAP value.
     """
     # Shap values
     df_shap=load_shap_values()

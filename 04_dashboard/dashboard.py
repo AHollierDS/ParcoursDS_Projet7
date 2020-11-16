@@ -192,7 +192,8 @@ def generate(thres=0.5, n_sample = 1000):
     
     # Shap/value scatter plot
     @app.callback(
-        Output(component_id='scatter_plot', component_property='figure'),
+        [Output(component_id='scatter_title', component_property='children'),
+         Output(component_id='scatter_plot', component_property='figure')],
         [Input(component_id='crit_selection', component_property='value'),
          Input(component_id='customer_selection', component_property='value')]
     )
@@ -200,8 +201,10 @@ def generate(thres=0.5, n_sample = 1000):
     def update_scatter(crit, cust=None):
         """
         """
+        title = f'Evolution of impact with {crit} value :'
         fig=dash_functions.plot_shap_scatter(crit, cust)
-        return fig
+        
+        return title, fig
     
     # Run the dashboard
     app.run_server()
