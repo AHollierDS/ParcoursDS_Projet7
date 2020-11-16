@@ -15,7 +15,7 @@ import dash_functions
 from dash.dependencies import Input, Output
 
 
-def generate(thres=0.5, n_sample = 10000):
+def generate(thres=0.5, n_sample=10000):
     """
     Build and display the dashboard.
     
@@ -30,7 +30,7 @@ def generate(thres=0.5, n_sample = 10000):
     """
 
     # Load data
-    df_decision=dash_functions.load_decisions(thres=thres)
+    df_decision=dash_functions.load_decisions(thres=thres, n_sample=n_sample)
     df_crit=dash_functions.load_criteria_descriptions()
     df_cust=dash_functions.load_customer_data(n_sample=n_sample)
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
@@ -162,7 +162,7 @@ def generate(thres=0.5, n_sample = 10000):
         """
         Display waterfall to explain loan decision for a given customer.
         """
-        fig = dash_functions.plot_waterfall(df_decision, customer_id, thres=thres)
+        fig = dash_functions.plot_waterfall(df_decision, df_shap, customer_id, thres=thres)
         return fig
     
     
@@ -175,7 +175,7 @@ def generate(thres=0.5, n_sample = 10000):
     def update_top_tables(customer_id):
         """
         """
-        children = dash_functions.generate_top_tables(df_cust, customer_id)
+        children = dash_functions.generate_top_tables(df_cust, df_shap, customer_id)
         return children
     
     
@@ -203,7 +203,7 @@ def generate(thres=0.5, n_sample = 10000):
         """
         """
         title = f'Evolution of impact with {crit} value :'
-        fig=dash_functions.plot_shap_scatter(df_cust, crit, cust)
+        fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust)
         
         return title, fig
     

@@ -13,12 +13,14 @@ import plotly.express as px
 import plotly.graph_objs as go
 
 
-def load_decisions(thres):
+def load_decisions(thres, n_sample=None):
     """
     Load submissions made on the test set and prepare data for dashboard.
     """
     # Load dataset and set decision with the threshold
     df_decision = pd.read_csv('../02_classification/submission.csv')
+    df_decision.sort_values(by='SK_ID_CURR', inplace=True)
+    df_decision=df_decision.iloc[:n_sample]
     df_decision['LOAN'] = df_decision['TARGET']<thres
     
     # Dict for customer selection
@@ -100,7 +102,7 @@ def plot_panel(df_decision, thres):
     return fig
 
 
-def find_base_value(df_decision, thres):
+def find_base_value(df_decision, df_shap, thres):
     """
     Calculate shapley base value based on the threshold.
     """
@@ -110,7 +112,6 @@ def find_base_value(df_decision, thres):
     first_denied = df_decision[~df_decision['LOAN']]['SK_ID_CURR'].head(1).values[0]
     
     # Calculate respective total SHAP values
-    df_shap = load_shap_values()
     last_shap = df_shap.loc[last_granted].sum()
     first_shap = df_shap.loc[first_denied].sum()
     
@@ -119,13 +120,10 @@ def find_base_value(df_decision, thres):
     return base
 
 
-def plot_waterfall(df_decision, customer_id, thres):
+def plot_waterfall(df_decision, df_shap, customer_id, thres):
     """
     Calculate waterfall based on shapley values.
-    """
-    # Load data
-    df_shap = load_shap_values()   
-    
+    """ 
     # Set data for waterfall
     df_waterfall = pd.DataFrame(df_shap.loc[customer_id])
     df_waterfall.columns = ['values']
@@ -138,7 +136,7 @@ def plot_waterfall(df_decision, customer_id, thres):
     df_others.index = ['others']
     df_waterfall = df_others.append(df_top)
     
-    base_value = find_base_value(df_decision, thres)
+    base_value = find_base_value(df_decision, df_shap, thres)
     
     # Plot waterfall
     fig = go.Figure(
@@ -168,17 +166,15 @@ def plot_waterfall(df_decision, customer_id, thres):
     return fig
 
 
-def generate_top_tables(df_cust, customer_id):
+def generate_top_tables(df_cust, df_shap, customer_id):
     """
     For a given customer id, retrieves the 15 criteria having most impact on loan decision
     """
     # Retrieve shap values for selected customer 
-    df_shap = load_shap_values()
     df_1 = df_shap.loc[[customer_id]].T
     df_1.columns=['impact']
 
     # Retrieve criteria values for selected customer
-    #df_cust = load_customer_data()
     df_2 = df_cust.loc[[customer_id]].T
     df_2.columns=['customer values']
 
@@ -229,7 +225,7 @@ def generate_top_tables(df_cust, customer_id):
     return children
 
 
-def plot_shap_scatter(df_cust, crit, cust):
+def plot_shap_scatter(df_cust, df_shap, crit, cust):
     """
     Shows evolution of SHAP value depending on selected criteria's value.
     
@@ -244,12 +240,10 @@ def plot_shap_scatter(df_cust, crit, cust):
         A partial dependence plot, where x is the criteria value and y the SHAP value.
     """
     # Shap values
-    df_shap=load_shap_values()
     s_shap=df_shap[[crit]].copy()
     s_shap.columns=['shap_value']
     
     # Criteria values
-    #df_cust=load_customer_data()
     s_vals = df_cust[[crit]].copy()
     s_vals.columns=['crit_value']
     
