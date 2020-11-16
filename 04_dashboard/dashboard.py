@@ -144,33 +144,25 @@ def generate(thres=0.5, n_sample=10000):
         return decision_output, fig_panel, fig_waterfall, children_top
     
     
-    # Criteria description
+    # Callbacks with a new criteria selected
     @app.callback(
-        Output(component_id='crit_descr', component_property='children'),
-        Input(component_id='crit_selection', component_property='value')
-    )
-    
-    def update_description(crit):
-        """
-        """
-        output = df_crit[df_crit['Row']==crit]['Description'].values[0]
-        return output
-    
-    # Shap/value scatter plot
-    @app.callback(
-        [Output(component_id='scatter_title', component_property='children'),
+        [Output(component_id='crit_descr', component_property='children'),
+         Output(component_id='scatter_title', component_property='children'),
          Output(component_id='scatter_plot', component_property='figure')],
         [Input(component_id='crit_selection', component_property='value'),
          Input(component_id='customer_selection', component_property='value')]
     )
     
-    def update_scatter(crit, cust=None):
+    def update_description(crit, cust=None):
         """
+        Plot scatter plot for evolution of impact with change in criteria value.
         """
-        title = f'Evolution of impact with {crit} value :'
+        output=df_crit[df_crit['Row']==crit]['Description'].values[0]
+        title=f'Evolution of impact with {crit} value :'
         fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust)
         
-        return title, fig
+        return output, title, fig
+    
     
     # Run the dashboard
     app.run_server()
