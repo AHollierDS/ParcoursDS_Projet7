@@ -103,80 +103,45 @@ def generate(thres=0.5, n_sample=10000):
 
     # Callbacks and component updates
     
-    # Decision about selected customet
+    # Callback when new customer is selected
     @app.callback(
-        Output(component_id='customer_decision', component_property='children'),
+        [Output(component_id='customer_decision', component_property='children'),
+         Output(component_id='panel', component_property='figure'),
+         Output(component_id='waterfall', component_property='figure'),
+         Output(component_id='top_tables', component_property='children')],
         Input(component_id='customer_selection', component_property='value')
     )
     
-    def update_decision_outputs(customer_id):
+    def update_customer(customer_id):
         """
-        Display loan decision and the evaluated risk for a given customer
+        Update decision, position in panel, waterfall and top 15 criteria
+        when a customer is selected in dropdown.
         """
-        # Classification
+        # Update loan decison
         decision = df_decision[df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
         decision = 'granted' if decision else 'denied'
-        
-        # Risk estimation
         risk = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
+        decision_output = 'Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
         
-        # Output
-        output = 'Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
-        return output
-    
-    
-    # Panel figure
-    @app.callback(
-         Output(component_id='panel', component_property='figure'),
-         Input(component_id='customer_selection', component_property='value')
-    )
-    
-    def update_panel(customer_id):
-        """
-        Highlight customer's bin in the evaluated risk distribution 
-        """
-        # Plot risk distribution
-        fig = dash_functions.plot_panel(df_decision, thres)
+        # Update customer panel
+        fig_panel = dash_functions.plot_panel(df_decision, thres)
         
-        # Find customer's bin
         cust_target = df_decision[df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
         heights = np.histogram(df_decision['TARGET'], bins=np.arange(0,1,0.01))[0]
         heights = heights/heights.sum()
         cust_height = 100*heights[int(cust_target//0.01)]
-
-        # Highlight customer's bin
-        fig.add_shape(type='rect',x0=cust_target//0.01/100, 
+        
+        fig_panel.add_shape(type='rect',x0=cust_target//0.01/100, 
                   x1=cust_target//0.01/100 + 0.01, 
                   y0=0, y1=cust_height, fillcolor='yellow')
         
-        return fig
-    
-    
-    # Waterfall plot
-    @app.callback(
-         Output(component_id='waterfall', component_property='figure'),
-         Input(component_id='customer_selection', component_property='value')
-    )
-    
-    def update_waterfall(customer_id):
-        """
-        Display waterfall to explain loan decision for a given customer.
-        """
-        fig = dash_functions.plot_waterfall(df_decision, df_shap, customer_id, thres=thres)
-        return fig
-    
-    
-    # Criteria tables
-    @app.callback(
-        Output(component_id='top_tables', component_property='children'),
-        Input(component_id='customer_selection', component_property='value')
-    )
-    
-    def update_top_tables(customer_id):
-        """
-        """
-        children = dash_functions.generate_top_tables(df_cust, df_shap, customer_id)
-        return children
+        # Update waterfall
+        fig_waterfall = dash_functions.plot_waterfall(df_decision, df_shap, customer_id, thres=thres)
+        
+        # Update top 15 tables
+        children_top = dash_functions.generate_top_tables(df_cust, df_shap, customer_id)
+        
+        return decision_output, fig_panel, fig_waterfall, children_top
     
     
     # Criteria description
