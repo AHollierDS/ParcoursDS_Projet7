@@ -73,35 +73,44 @@ def generate(thres=0.5, n_sample=10000):
         dcc.Graph(id='panel', 
                   figure=dash_functions.plot_panel(df_decision, thres)),
         
-        # Slider for number of criteria to display
-        html.Label('Number of criteria to display'),
-        dcc.Slider(id='top_slider', 
-                   min=5, max=50, value=15, step=5,
-                   marks={
-                       x: 'Top {}'.format(x) if x==5 else str(x) for x in range(5,55,5)
-                   }),
-        
-        # Waterfall plot
-        html.H2(children='Waterfall for selected customer'),
-        dcc.Graph(id='waterfall'),
-        
-        # Top criteria for selected customer
+        # Top criteria section
         html.H2(children='Most important criteria'),
-        html.Div(id='top_tables'),
-        
+        html.Div(children=[
+            html.Div(children=[
+                html.H3(children='Waterfall for selected customer'),
+                
+                # Slider for number of criteria to display
+                html.Label('Number of criteria to display'),
+                dcc.Slider(id='top_slider', 
+                       min=5, max=50, value=15, step=5,
+                       marks={
+                           x: 'Top {}'.format(x) if x==5 else str(x) for x in range(5,55,5)
+                       }),
+
+                # Waterfall plot
+                dcc.Graph(id='waterfall')
+                ], className='five columns'),
+
+            # Top criteria for selected customer
+            html.Div(children=[
+                html.Div(id='top_tables')],
+                     className='seven columns')
+         ], className='row'),
+
         # Criteria selection and description
         html.H2(children='Criteria description'),
-        
+
         html.Div(
             children=[
                 html.H3(children='Select a criteria'),
                 dcc.Dropdown(
                     id='crit_selection',
                     options=df_crit['options'].tolist()),
-                
+
                 html.H3(children='Description :'),    
                 html.Div(id='crit_descr') 
-            ], className='one-third column'),
+            ]),
+        
         
         # Shap vs value scatter plot
         html.Div(
