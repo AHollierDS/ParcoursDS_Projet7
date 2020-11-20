@@ -216,10 +216,17 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
             orientation = 'h',
             y=df_waterfall.index,
             x=df_waterfall['values']),
-        layout = go.Layout(height=200+(25*n_top), width=800)
+        layout = go.Layout(
+            height=200+(25*n_top), 
+            width=600,
+            xaxis_title='Confidence score', 
+            yaxis_title = 'Criteria',
+            yaxis_side='right',
+            yaxis_tickfont=dict(size=10)
+        )
     )
     
-    fig.update_layout(xaxis_title='Confidence score', yaxis_title = 'Criteria')
+    fig.update_layout()
     
     # Add base value and final result on the plot
     fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
