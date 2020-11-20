@@ -134,7 +134,8 @@ def plot_panel(df_decision, thres):
     fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
                   title='Distribution of estimated risk on a representative panel',
                   labels={'TARGET':'Estimated risk'})
-    fig.update_layout(yaxis_title='% of customers', xaxis_tickformat = ',.0%')
+    fig.update_layout(yaxis_title='% of customers', xaxis_tickformat = ',.0%',
+                     margin_t=30)
     
     # Display threshold
     fig.add_shape(type='line', x0=thres, x1=thres, y0=0, y1=15, 
@@ -222,11 +223,11 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
             xaxis_title='Confidence score', 
             yaxis_title = 'Criteria',
             yaxis_side='right',
-            yaxis_tickfont=dict(size=10)
+            yaxis_tickfont=dict(size=10),
+            margin_l=10, margin_r=10, 
+            margin_t=30, margin_b=10
         )
     )
-    
-    fig.update_layout()
     
     # Add base value and final result on the plot
     fig.add_shape(type='line', x0=base_value, x1=base_value, y0=-1, y1=1)
@@ -374,7 +375,9 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
                       y0=cust_shap, y1=cust_shap,
                       line_dash='dot', line_color='red')
         
-        fig.update_layout(xaxis_title='Criteria value', yaxis_title = 'Impact')
+        fig.update_layout(xaxis_title='Criteria value', 
+                          yaxis_title = 'Impact',
+                          margin_t=30)
         
     return fig
 
