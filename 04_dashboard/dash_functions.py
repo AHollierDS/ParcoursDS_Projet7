@@ -139,7 +139,7 @@ def plot_panel(df_decision, thres):
     # Display threshold
     fig.add_shape(type='line', x0=thres, x1=thres, y0=0, y1=15, 
                   line_color='red', line_dash='dot')
-    fig.add_annotation(text='Maximum allowed risk ({:.1%})'.format(thres),
+    fig.add_annotation(text='Maximum allowed risk ({:.0%})'.format(thres),
                        x=thres, y=15)
     
     return fig

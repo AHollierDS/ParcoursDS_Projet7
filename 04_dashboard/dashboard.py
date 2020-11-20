@@ -67,8 +67,8 @@ def generate(thres=0.5, n_sample=10000):
                     
                     html.H4(
                         className='row',
-                        children='Select a customer ID to explain ' +\
-                                'why granted/denied loan'),
+                        children='Select a customer ID to retrieve decision' +\
+                                'and to explain why the loan is granted or denied'),
                     
                     # Customer selection and loan decision
                     html.Div(
@@ -76,15 +76,33 @@ def generate(thres=0.5, n_sample=10000):
                         children=[
                             html.Div(
                                 className='three columns',
-                                children=dcc.Dropdown(
+                                style={'fontSize':20},
+                                children=[
+                                    html.Div(children='Customer ID :'),
+                                    dcc.Dropdown(
                                     id='customer_selection',
-                                    options=df_decision['option'].tolist())),
+                                    options=df_decision['option'].tolist())]),
+                            
                             html.Div(
-                                className='four columns',
-                                id='customer_risk'),
+                                className='three columns',
+                                style={'fontSize':20},
+                                children=[
+                                    html.Div('Estimated risk'),
+                                    html.Div(id='customer_risk')]),
+                            
                             html.Div(
-                                className='four columns',
-                                id='customer_decision'),
+                                className='three columns',
+                                style={'fontSize':20},
+                                children=[
+                                    html.Div('Loan is'),
+                                    html.Div(id='customer_decision')]),
+                            
+                            html.Div(
+                                className='three columns',
+                                style={'fontSize':20},
+                                children=[
+                                    html.Div('Maximum allowed risk is'),
+                                    html.Div(children='{:.0%}'.format(thres))]) 
                         ])])]
         ),
 
@@ -145,7 +163,8 @@ def generate(thres=0.5, n_sample=10000):
     
     # Callback when new customer is selected
     @app.callback(
-        [Output(component_id='customer_decision', component_property='children'),
+        [Output(component_id='customer_risk', component_property='children'),
+         Output(component_id='customer_decision', component_property='children'),
          Output(component_id='panel', component_property='figure'),
          Output(component_id='waterfall', component_property='figure'),
          Output(component_id='top_tables', component_property='children')],
@@ -158,16 +177,15 @@ def generate(thres=0.5, n_sample=10000):
         Update decision, position in panel, waterfall and top 15 criteria
         when a customer is selected in dropdown.
         """
-        # Update loan decison
-        decision = df_decision[
-            df_decision['SK_ID_CURR']==customer_id]['LOAN'].values[0]
+        # Update customer estimated risk and decision
+        dfc = df_decision[
+            df_decision['SK_ID_CURR']==customer_id]
         
-        decision = 'granted' if decision else 'denied'
+        risk = dfc['TARGET'].values[0]
+        risk_output='{:.1%}'.format(risk)
         
-        risk = df_decision[
-            df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
-        
-        decision_output='Estimated risk = {:.1%} - Loan is {}'.format(risk, decision)
+        decision = dfc['LOAN'].values[0]
+        decision_output = 'granted' if decision else 'denied'
         
         # Update customer panel
         fig_panel = dash_functions.plot_panel(df_decision, thres)
@@ -193,7 +211,7 @@ def generate(thres=0.5, n_sample=10000):
         children_top = dash_functions.generate_top_tables(
             n_top, df_cust, df_shap, customer_id)
         
-        return decision_output, fig_panel, fig_waterfall, children_top
+        return risk_output, decision_output, fig_panel, fig_waterfall, children_top
     
     
     # Callbacks with a new criteria selected
