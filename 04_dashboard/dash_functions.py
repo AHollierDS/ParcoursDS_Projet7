@@ -237,11 +237,13 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
     return fig
 
 
-def generate_top_tables(df_cust, df_shap, customer_id):
+def generate_top_tables(n_top, df_cust, df_shap, customer_id):
     """
-    For a given customer id, retrieves the 15 criteria having most impact on loan decision.
+    For a given customer id, retrieves the n_top criteria having most impact on loan decision.
     
     params:
+        n_top:
+            Number of top criteria to display.
         df_cust:
             A customer description DataFrame.
         df_shap:
@@ -251,8 +253,8 @@ def generate_top_tables(df_cust, df_shap, customer_id):
     
     returns:
         Two tables of main criteria :
-        - Top 15 decisive criteria for selected customer;
-        - Top 15 decisive overall criteria compared to the customer values.
+        - Top decisive criteria for selected customer;
+        - Top decisive overall criteria compared to the customer values.
     """
     # Retrieve shap values for selected customer 
     df_1 = df_shap.loc[[customer_id]].T
@@ -267,14 +269,14 @@ def generate_top_tables(df_cust, df_shap, customer_id):
     df_table['abs']=df_1['impact'].apply('abs')
     df_table['criteria'] = df_table.index
     
-    # Top 15 table sorted by impact for selected customer
+    # Top n table sorted by impact for selected customer
     df_table_c = df_table.sort_values(by='abs', ascending=False)
-    df_table_c = df_table_c[['criteria', 'customer values', 'impact']].head(15)
+    df_table_c = df_table_c[['criteria', 'customer values', 'impact']].head(n_top)
     df_table_c = df_table_c.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     
     child_c = [
         html.Div(children=[
-            html.H3(children='Top 15 criteria - Selected customer'),
+            html.H3(children=f'Top {n_top} criteria - Selected customer'),
             html.Table([
                 html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
                 html.Tbody([
@@ -285,7 +287,7 @@ def generate_top_tables(df_cust, df_shap, customer_id):
     )]
     
     # Top 15 table sorted by mean absolute impact for all customers
-    overall_top = df_shap.apply('abs').mean().sort_values(ascending=False).head(15)
+    overall_top = df_shap.apply('abs').mean().sort_values(ascending=False).head(n_top)
     df_overall = df_table.loc[overall_top.index]
     df_overall['mean abs impact'] = overall_top
     df_overall['criteria'] = df_overall.index
@@ -294,7 +296,7 @@ def generate_top_tables(df_cust, df_shap, customer_id):
 
     child_o = [
         html.Div(children=[
-            html.H3(children='Top 15 criteria - Overall'),
+            html.H3(children=f'Top {n_top} criteria - Overall'),
             html.Table([
                 html.Thead(html.Tr([html.Th(col) for col in df_overall.columns])),
                 html.Tbody([

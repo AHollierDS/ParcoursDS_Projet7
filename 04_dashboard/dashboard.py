@@ -160,9 +160,9 @@ def generate(thres=0.5, n_sample=10000):
         fig_waterfall = dash_functions.plot_waterfall(
             df_decision, df_shap, customer_id, n_top, thres=thres)
         
-        # Update top 15 tables
+        # Update top n_top tables
         children_top = dash_functions.generate_top_tables(
-            df_cust, df_shap, customer_id)
+            n_top, df_cust, df_shap, customer_id)
         
         return decision_output, fig_panel, fig_waterfall, children_top
     
