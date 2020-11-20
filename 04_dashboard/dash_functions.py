@@ -357,6 +357,10 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
     df_summary = s_shap.join(s_vals)
     fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.1)
     
+    fig.update_layout(
+        xaxis_title='Criteria value',  yaxis_title = 'Impact', margin_t=30
+    )
+    
     # Selected customer data
     if cust is not None:
         # Customer Shap and value for selected criteria
@@ -374,11 +378,7 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
                       x0=df_summary['crit_value'].min(), x1=cust_value, 
                       y0=cust_shap, y1=cust_shap,
                       line_dash='dot', line_color='red')
-        
-        fig.update_layout(xaxis_title='Criteria value', 
-                          yaxis_title = 'Impact',
-                          margin_t=30)
-        
+
     return fig
 
     
