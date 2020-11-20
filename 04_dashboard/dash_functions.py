@@ -174,7 +174,7 @@ def find_base_value(df_decision, df_shap, thres):
     return base
 
 
-def plot_waterfall(df_decision, df_shap, customer_id, thres):
+def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
     """
     Calculate waterfall based on shapley values for a given customer.
     
@@ -186,6 +186,8 @@ def plot_waterfall(df_decision, df_shap, customer_id, thres):
         customer_id :
             The SK_ID_CURR value of the customer for whom application decision
             will be explained.
+        n_top:
+            Number of top criteria to display.
         thres:
             Threshold risk value above which a customer's loan is denied.
             
@@ -199,10 +201,10 @@ def plot_waterfall(df_decision, df_shap, customer_id, thres):
     df_waterfall['abs']=df_waterfall['values'].apply('abs')
     df_waterfall.sort_values(by='abs', inplace=True)
     
-    # Aggregate shap values not in top 20
-    df_top=df_waterfall.tail(20)
-    df_others = pd.DataFrame(df_waterfall.iloc[:-20].sum(axis=0)).T
-    df_others.index = ['others']
+    # Aggregate shap values not in top n
+    df_top=df_waterfall.tail(n_top)
+    df_others = pd.DataFrame(df_waterfall.iloc[:-n_top].sum(axis=0)).T
+    df_others.index = [f'others (n={len(df_waterfall.iloc[:-n_top])})']
     df_waterfall = df_others.append(df_top)
     
     base_value = find_base_value(df_decision, df_shap, thres)
@@ -214,7 +216,7 @@ def plot_waterfall(df_decision, df_shap, customer_id, thres):
             orientation = 'h',
             y=df_waterfall.index,
             x=df_waterfall['values']),
-        layout = go.Layout(height=600, width=800)
+        layout = go.Layout(height=200+(25*n_top), width=800)
     )
     
     fig.update_layout(xaxis_title='Confidence score', yaxis_title = 'Criteria')
@@ -224,12 +226,12 @@ def plot_waterfall(df_decision, df_shap, customer_id, thres):
     fig.add_annotation(text='Base value', x=base_value, y=0)
     
     final_value = df_waterfall['values'].sum() + base_value
-    fig.add_shape(type='line', x0=final_value, x1=final_value, y0=20, y1=21)
+    fig.add_shape(type='line', x0=final_value, x1=final_value, y0=n_top, y1=n_top+1)
     fig.add_annotation(text='score = {:.3}'.format(final_value), 
-                       x=final_value, y=21)
+                       x=final_value, y=n_top+1)
     
     # Threshold line
-    fig.add_shape(type='line', x0=0, x1=0, y0=-1, y1=21, 
+    fig.add_shape(type='line', x0=0, x1=0, y0=-1, y1=n_top+1, 
                   line_color='red', line_dash='dot')
     
     return fig

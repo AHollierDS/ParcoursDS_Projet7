@@ -73,6 +73,14 @@ def generate(thres=0.5, n_sample=10000):
         dcc.Graph(id='panel', 
                   figure=dash_functions.plot_panel(df_decision, thres)),
         
+        # Slider for number of criteria to display
+        html.Label('Number of criteria to display'),
+        dcc.Slider(id='top_slider', 
+                   min=5, max=50, value=15, step=5,
+                   marks={
+                       x: 'Top {}'.format(x) if x==5 else str(x) for x in range(5,55,5)
+                   }),
+        
         # Waterfall plot
         html.H2(children='Waterfall for selected customer'),
         dcc.Graph(id='waterfall'),
@@ -112,10 +120,11 @@ def generate(thres=0.5, n_sample=10000):
          Output(component_id='panel', component_property='figure'),
          Output(component_id='waterfall', component_property='figure'),
          Output(component_id='top_tables', component_property='children')],
-        Input(component_id='customer_selection', component_property='value')
+        [Input(component_id='customer_selection', component_property='value'),
+         Input(component_id='top_slider', component_property='value')]
     )
     
-    def update_customer(customer_id):
+    def update_customer(customer_id, n_top):
         """
         Update decision, position in panel, waterfall and top 15 criteria
         when a customer is selected in dropdown.
@@ -149,7 +158,7 @@ def generate(thres=0.5, n_sample=10000):
         
         # Update waterfall
         fig_waterfall = dash_functions.plot_waterfall(
-            df_decision, df_shap, customer_id, thres=thres)
+            df_decision, df_shap, customer_id, n_top, thres=thres)
         
         # Update top 15 tables
         children_top = dash_functions.generate_top_tables(
