@@ -3,8 +3,11 @@
 *-checkpoint.ipynb
 *.ipynb_checkpoints
 *.zip
-*.csv
 *.pkl
 *.png
 *.pbix
 ~$*.pptx
+
+data/data_inputs
+03_interpretability/*.csv
+*gzip
