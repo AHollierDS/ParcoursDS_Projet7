@@ -15,7 +15,11 @@ import dash_functions
 from dash.dependencies import Input, Output
 
 
-def generate(thres=0.5, n_sample=10000):
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(external_stylesheets=external_stylesheets)
+
+
+def generate(thres=0.3, n_sample=10000):
     """
     Build and display the dashboard.
     
@@ -37,9 +41,7 @@ def generate(thres=0.5, n_sample=10000):
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
-        'logo%20projet%20fintech.png'
-    
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        'logo%20projet%20fintech.png'  
     
     # Define some styles
     title_style={'font-weight':'bold', 'text-align':'center', 
@@ -47,7 +49,7 @@ def generate(thres=0.5, n_sample=10000):
     H2_style = {'background-color':'lightblue', 'font-weight':'bold'}
 
     # Dashboard layout
-    app = dash.Dash(external_stylesheets=external_stylesheets)
+    
     
     app.layout = html.Div(children=[
         
@@ -273,3 +275,8 @@ def generate(thres=0.5, n_sample=10000):
     
     # Run the dashboard
     app.run_server()
+    
+    
+if __name__=="__main__":
+    generate()
+    

@@ -13,6 +13,8 @@ import plotly.express as px
 import plotly.graph_objs as go
 
 
+source_path = '../data/data_dashboard/'
+
 def load_decisions(thres, n_sample=None):
     """
     Load submissions made on the test set and prepare data for dashboard.
@@ -28,7 +30,9 @@ def load_decisions(thres, n_sample=None):
         A DataFrame containing estimated risk and loan verdict for each customer.     
     """
     # Load dataset and set decision with the threshold
-    df_decision = pd.read_csv('../02_classification/submission.csv')
+    file='submission.csv'
+    
+    df_decision = pd.read_csv(source_path+file)
     df_decision.sort_values(by='SK_ID_CURR', inplace=True)
     df_decision=df_decision.iloc[:n_sample]
     df_decision['LOAN'] = df_decision['TARGET']<thres
@@ -54,13 +58,12 @@ def load_customer_data(n_sample=None):
         A DataFrame containing preprocessed data describing all customers.
     """
     # Load data
-    df_cust=pd.read_pickle(
-        '../data/data_outputs/feature_engineered/cleaned_dataset_test.pkl')
-
+    file = 'customers_values.csv.gzip'
+    df_cust=pd.read_csv(source_path+file, compression='gzip')
     df_cust.index = df_cust['SK_ID_CURR']
     
     # Select features and sample dataset
-    l_drop = ['TARGET','SK_ID_CURR','SK_ID_BUREAU','SK_ID_PREV','index', 'source']
+    l_drop = ['Unnamed: 0', 'TARGET','SK_ID_CURR','SK_ID_BUREAU','SK_ID_PREV','index', 'source']
     feats = [f for f in df_cust.columns if f not in l_drop]
     df_cust=df_cust[feats]
     
@@ -84,9 +87,10 @@ def load_shap_values(n_sample=None):
         A DataFrame containing shapley values for all criteria per customer.
     """
     # Load data
-    df_shap = pd.read_csv('../03_interpretability/test_shap_values.csv')
+    file='shap_values.csv.gzip'
+    df_shap = pd.read_csv(source_path+file, compression='gzip')
     df_shap.index=df_shap['SK_ID_CURR']
-    df_shap = df_shap.drop(columns = ['SK_ID_CURR'])
+    df_shap = df_shap.drop(columns = ['SK_ID_CURR', 'Unnamed: 0'])
     
     # Sample dataset
     if n_sample != None :
@@ -103,9 +107,8 @@ def load_criteria_descriptions():
         Filtered HomeCredit columns description provided for the project.
     """
     # Load data
-    df_crit = pd.read_csv(
-        '../data/data_inputs/HomeCredit_columns_description.csv', 
-        encoding ='cp1252', usecols=[2,3])
+    file='HomeCredit_columns_description.csv'
+    df_crit = pd.read_csv(source_path+file, encoding ='cp1252', usecols=[2,3])
 
     # Drop customer id and target
     l_drop = ['SK_ID_CURR', 'TARGET']
