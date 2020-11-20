@@ -151,10 +151,16 @@ def generate(thres=0.5, n_sample=10000):
                             dcc.Dropdown(
                                 id='crit_selection',
                                 options=df_crit['options'].tolist()),
+                            
                             html.H3(children='Description :'), 
-                            html.Div(id='crit_descr') 
+                            html.Div(id='crit_descr'),
+                            
+                            html.H3(children='Customer value :'), 
+                            html.Div(id='cust_crit_value'),
+                            
+                            html.H3(children='Impact on customer :'), 
+                            html.Div(id='cust_crit_impact'),
                 ]),
-
 
             # Shap vs value scatter plot
             html.Div(
@@ -225,7 +231,9 @@ def generate(thres=0.5, n_sample=10000):
     @app.callback(
         [Output(component_id='crit_descr', component_property='children'),
          Output(component_id='scatter_title', component_property='children'),
-         Output(component_id='scatter_plot', component_property='figure')],
+         Output(component_id='scatter_plot', component_property='figure'),
+         Output(component_id='cust_crit_value', component_property='children'),
+         Output(component_id='cust_crit_impact', component_property='children')],
         [Input(component_id='crit_selection', component_property='value'),
          Input(component_id='customer_selection', component_property='value')]
     )
@@ -238,7 +246,15 @@ def generate(thres=0.5, n_sample=10000):
         title=f'Evolution of impact with {crit} value :'
         fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust)
         
-        return output, title, fig
+        if cust is not None:
+            cust_crit_val=df_cust.loc[cust, crit]
+            cust_crit_imp=df_shap.loc[cust, crit]
+            cust_crit_imp='{:.4f}'.format(cust_crit_imp)
+        else :
+            cust_crit_val='NA'
+            cust_crit_imp='NA'
+        
+        return output, title, fig, cust_crit_val, cust_crit_imp
     
     
     # Run the dashboard
