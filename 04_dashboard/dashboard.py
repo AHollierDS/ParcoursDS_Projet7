@@ -46,28 +46,48 @@ def generate(thres=0.5, n_sample=10000):
     
     app.layout = html.Div(children=[
         
-        # Dash title
+        # Dash header
         html.Div(
-            [html.Div(
-                [html.Img(src=logo, width=218, height=200)],
-                className="one-third column"),
+            className='row',
+            children=[
+                     
+            # "Pret à depenser" logo
+            html.Img(
+                src=logo, width=218, height=200,
+                className="two columns"
+            ),
+            
             html.Div(
-                [html.H1(children='Decision-making dashboard')],
-                className='one-half column'),
-            ],className='row flex-display'),
-        
-        html.Div(children='Select a customer ID to explain why granted/denied loan'),
-        
-        # Customer selection and decision
-        html.H2('Customer selection :'),
-        dcc.Dropdown(
-            id='customer_selection',
-            options=df_decision['option'].tolist()
+                className='ten columns',
+                children=[
+                    # Dash title
+                    html.H1(
+                        className='row',
+                        children='Decision-making dashboard'),
+                    
+                    html.H4(
+                        className='row',
+                        children='Select a customer ID to explain ' +\
+                                'why granted/denied loan'),
+                    
+                    # Customer selection and loan decision
+                    html.Div(
+                        className='row',
+                        children=[
+                            html.Div(
+                                className='three columns',
+                                children=dcc.Dropdown(
+                                    id='customer_selection',
+                                    options=df_decision['option'].tolist())),
+                            html.Div(
+                                className='four columns',
+                                id='customer_risk'),
+                            html.Div(
+                                className='four columns',
+                                id='customer_decision'),
+                        ])])]
         ),
-        
-        html.Label('Final decision :'),
-        html.Div(id='customer_decision'),
-        
+
         # Customer position vs customers panel
         html.H2(children='Customer position in customer panel'),
         dcc.Graph(id='panel', 
