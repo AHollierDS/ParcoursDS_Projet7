@@ -40,6 +40,11 @@ def generate(thres=0.5, n_sample=10000):
         'logo%20projet%20fintech.png'
     
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    
+    # Define some styles
+    title_style={'font-weight':'bold', 'text-align':'center', 
+                 'background-color':'darkblue', 'color':'white'}
+    H2_style = {'background-color':'lightblue', 'font-weight':'bold'}
 
     # Dashboard layout
     app = dash.Dash(external_stylesheets=external_stylesheets)
@@ -63,6 +68,7 @@ def generate(thres=0.5, n_sample=10000):
                     # Dash title
                     html.H1(
                         className='row',
+                        style=title_style,
                         children='Decision-making dashboard'),
                     
                     html.H4(
@@ -87,32 +93,39 @@ def generate(thres=0.5, n_sample=10000):
                                 className='three columns',
                                 style={'fontSize':20},
                                 children=[
-                                    html.Div('Estimated risk'),
-                                    html.Div(id='customer_risk')]),
+                                    html.Div('Estimated risk', 
+                                             style={'text-align': 'center'}),
+                                    html.Div(id='customer_risk', 
+                                             style={'text-align': 'center'})]),
                             
                             html.Div(
                                 className='three columns',
                                 style={'fontSize':20},
                                 children=[
-                                    html.Div('Loan is'),
-                                    html.Div(id='customer_decision')]),
+                                    html.Div('Loan is', 
+                                             style={'text-align': 'center'}),
+                                    html.Div(id='customer_decision', 
+                                             style={'text-align': 'center'})]),
                             
                             html.Div(
                                 className='three columns',
                                 style={'fontSize':20},
                                 children=[
-                                    html.Div('Maximum allowed risk is'),
-                                    html.Div(children='{:.0%}'.format(thres))]) 
+                                    html.Div('Maximum allowed risk is', 
+                                             style={'text-align': 'center'}),
+                                    html.Div(children='{:.0%}'.format(thres),
+                                            style={'text-align': 'center'})]) 
                         ])])]
         ),
 
         # Customer position vs customers panel
-        html.H2(children='Customer position in customer panel'),
+        html.H2(children='Customer position in customer panel',
+               style=H2_style),
         dcc.Graph(id='panel', 
                   figure=dash_functions.plot_panel(df_decision, thres)),
         
         # Top criteria section
-        html.H2(children='Most important criteria'),
+        html.H2(children='Most important criteria', style =H2_style),
         html.Div(children=[
             html.Div(children=[
                 html.H3(children='Waterfall for selected customer'),
@@ -141,7 +154,7 @@ def generate(thres=0.5, n_sample=10000):
             className='row',
             children=[
              # Criteria selection and description
-            html.H2(children='Criteria description'),
+            html.H2(children='Criteria description', style =H2_style),
             html.Div(
                 children=[
                     html.Div(
@@ -242,19 +255,20 @@ def generate(thres=0.5, n_sample=10000):
         """
         Plot scatter plot for evolution of impact with change in criteria value.
         """
-        output=df_crit[df_crit['Row']==crit]['Description'].values[0]
-        title=f'Evolution of impact with {crit} value :'
-        fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust)
-        
-        if cust is not None:
-            cust_crit_val=df_cust.loc[cust, crit]
-            cust_crit_imp=df_shap.loc[cust, crit]
-            cust_crit_imp='{:.4f}'.format(cust_crit_imp)
-        else :
-            cust_crit_val='NA'
-            cust_crit_imp='NA'
-        
-        return output, title, fig, cust_crit_val, cust_crit_imp
+        if crit is not None:
+            output=df_crit[df_crit['Row']==crit]['Description'].values[0]
+            title=f'Evolution of impact with {crit} value :'
+            fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust)
+
+            if cust is not None:
+                cust_crit_val=df_cust.loc[cust, crit]
+                cust_crit_imp=df_shap.loc[cust, crit]
+                cust_crit_imp='{:.4f}'.format(cust_crit_imp)
+            else :
+                cust_crit_val='NA'
+                cust_crit_imp='NA'
+
+            return output, title, fig, cust_crit_val, cust_crit_imp
     
     
     # Run the dashboard

@@ -276,6 +276,7 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
     df_table = df_1.merge(df_2, left_index=True, right_index=True)
     df_table['abs']=df_1['Impact'].apply('abs')
     df_table['Criteria'] = df_table.index
+    df_table['Criteria']=df_table['Criteria'].apply(lambda x:str(x)[:30])
     
     # Top n table sorted by impact for selected customer
     df_table_c = df_table.sort_values(by='abs', ascending=False)
@@ -286,7 +287,9 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
         html.Div(children=[
             html.H3(children=f'Top {n_top} criteria - Customer'),
             html.Table([
-                html.Thead(html.Tr([html.Th(col) for col in df_table_c.columns])),
+                html.Thead(
+                    html.Tr([html.Th(col) for col in df_table_c.columns])
+                ),
                 html.Tbody([
                     html.Tr([
                         html.Td(
@@ -303,6 +306,7 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
     df_overall = df_table.loc[overall_top.index]
     df_overall['Mean impact'] = overall_top
     df_overall['Criteria'] = df_overall.index
+    df_overall['Criteria']=df_overall['Criteria'].apply(lambda x:str(x)[:30])
     df_overall = df_overall.applymap(lambda x: round(x,3) if pd.api.types.is_number(x) else x)
     df_overall = df_overall[['Criteria', 'Mean impact', 'Values', 'Impact']]
 
@@ -318,7 +322,7 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
                             style={'fontSize':10}
                         ) for col in df_overall.columns
                     ]) for i in range(len(df_overall))])
-            ])
+            ], style={"textOverflow":'ellipsis', 'overflow':'hidden', 'maxWidth':0})
         ], className='seven columns'
     )]
     
