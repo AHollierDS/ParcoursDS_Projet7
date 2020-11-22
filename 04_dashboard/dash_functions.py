@@ -222,7 +222,7 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
             x=df_waterfall['values']),
         layout = go.Layout(
             height=200+(25*n_top), 
-            width=600,
+            #width=600,
             xaxis_title='Confidence score', 
             yaxis_title = 'Criteria',
             yaxis_side='right',
