@@ -129,15 +129,9 @@ def shap_explain(l_explainers, customer_id, df_cust):
     return shap_vals
 
 
-def load_shap_values(n_sample=None):
+def load_shap_values():
     """
-    Load dataset containing shap values for each customer.
-    Dataset is restricted to the n_sample-th first customers.
-    
-    params:
-        n_sample : 
-            Number of customers to include in the dataset.
-            If None, all customers are included.
+    Load dataset containing shap values for a sample of 1000 customers.
     
     returns:
         A DataFrame containing shapley values for all criteria per customer.
@@ -146,11 +140,7 @@ def load_shap_values(n_sample=None):
     file='shap_values.csv.gzip'
     df_shap = pd.read_csv(source_path+file, compression='gzip')
     df_shap.index=df_shap['SK_ID_CURR']
-    df_shap = df_shap.drop(columns = ['SK_ID_CURR', 'Unnamed: 0'])
-    
-    # Sample dataset
-    if n_sample != None :
-        df_shap = df_shap.iloc[:n_sample]
+    df_shap = df_shap.drop(columns = ['SK_ID_CURR'])
     
     return df_shap
 
@@ -455,4 +445,3 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
 
     return fig
 
-    
