@@ -61,35 +61,6 @@ def predict_decision(models, df_cust, customer_id, thres):
     decision = prob_deny < thres
     
     return prob_deny, decision
-    
-
-def load_decisions(thres, n_sample=None):
-    """
-    Load submissions made on the test set and prepare data for dashboard.
-    
-    params:
-        thres:
-            Threshold risk value above which a customer's loan is denied.
-        n_sample : 
-            Number of customers to include in the dataset.
-            If None, all customers are included.
-    
-    returns:
-        A DataFrame containing estimated risk and loan verdict for each customer.     
-    """
-    # Load dataset and set decision with the threshold
-    file='submission.csv'
-    
-    df_decision = pd.read_csv(source_path+file)
-    df_decision.sort_values(by='SK_ID_CURR', inplace=True)
-    df_decision=df_decision.iloc[:n_sample]
-    df_decision['LOAN'] = df_decision['TARGET']<thres
-    
-    # Dict for customer selection
-    df_decision['option'] = df_decision['SK_ID_CURR'].apply(
-        lambda x : {'label': str(x), 'value':x})
-    
-    return df_decision
 
 
 def load_customer_data(n_sample=None):
@@ -439,8 +410,6 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
     params:
         df_cust:
             A customer description DataFrame.
-        df_shap:
-            A Shapley values DataFrame.
         crit:
             The criteria to we want to plot.
         cust:

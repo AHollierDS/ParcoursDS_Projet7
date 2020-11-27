@@ -35,7 +35,6 @@ def generate(thres=0.3, n_sample=10000):
     """
 
     # Load data
-    df_decision=dash_functions.load_decisions(thres=thres, n_sample=n_sample)
     df_crit=dash_functions.load_criteria_descriptions()
     df_cust=dash_functions.load_customer_data(n_sample=n_sample)
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
