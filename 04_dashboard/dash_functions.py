@@ -60,7 +60,7 @@ def predict_decision(models, df_cust, customer_id, thres):
     prob_deny = decision_vector[0][1]
     decision = prob_deny < thres
     
-    return (prob_deny, decision)
+    return prob_deny, decision
     
 
 def load_decisions(thres, n_sample=None):

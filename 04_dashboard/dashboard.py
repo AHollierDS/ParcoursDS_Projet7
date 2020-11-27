@@ -40,6 +40,8 @@ def generate(thres=0.3, n_sample=10000):
     df_cust=dash_functions.load_customer_data(n_sample=n_sample)
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
+    models = dash_functions.load_models()
+    
     customer_list = df_cust.index.map(lambda x : {'label': str(x), 'value':x}).tolist()
     
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
@@ -93,8 +95,6 @@ def generate(thres=0.3, n_sample=10000):
                                         id='customer_selection',
                                         options=customer_list
                                     )]),
-                            
-    #df_decision['SK_ID_CURR'].apply( lambda x : {'label': str(x), 'value':x})
                             
                             html.Div(
                                 className='three columns',
@@ -211,13 +211,10 @@ def generate(thres=0.3, n_sample=10000):
         when a customer is selected in dropdown.
         """
         # Update customer estimated risk and decision
-        dfc = df_decision[
-            df_decision['SK_ID_CURR']==customer_id]
-        
-        risk = dfc['TARGET'].values[0]
+        risk, decision = dash_functions.predict_decision(
+            models, df_cust, customer_id, thres)
+
         risk_output='{:.1%}'.format(risk)
-        
-        decision = dfc['LOAN'].values[0]
         decision_output = 'granted' if decision else 'denied'
         
         # Update customer panel
