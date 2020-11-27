@@ -40,6 +40,8 @@ def generate(thres=0.3, n_sample=10000):
     df_cust=dash_functions.load_customer_data(n_sample=n_sample)
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
+    customer_list = df_cust.index.map(lambda x : {'label': str(x), 'value':x}).tolist()
+    
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
         'logo%20projet%20fintech.png'  
     
@@ -88,8 +90,11 @@ def generate(thres=0.3, n_sample=10000):
                                 children=[
                                     html.Div(children='Customer ID :'),
                                     dcc.Dropdown(
-                                    id='customer_selection',
-                                    options=df_decision['option'].tolist())]),
+                                        id='customer_selection',
+                                        options=customer_list
+                                    )]),
+                            
+    #df_decision['SK_ID_CURR'].apply( lambda x : {'label': str(x), 'value':x})
                             
                             html.Div(
                                 className='three columns',
