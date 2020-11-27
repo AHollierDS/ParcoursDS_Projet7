@@ -151,8 +151,8 @@ def shap_explain(l_explainers, customer_id, df_cust):
     n_expl = len(l_explainers)
     
     # Aggregate explainations from every SHAP explainer
-    for expl in range(n_expl):
-        shapley = l_explainers[expl].shap_values(customer_values)[0]
+    for i in range(n_expl):
+        shapley = l_explainers[i].shap_values(customer_values)[0]
         shap_vals += (shapley/n_expl)
         
     return shap_vals
@@ -249,44 +249,34 @@ def plot_panel(panel_hist, thres):
     return fig
 
 
-def find_base_value(df_decision, df_shap, thres):
+def find_base_value(l_explainers):
     """
     Calculate shapley base value based on the threshold.
     
     params:
-        df_decision:
-            A loan decision DataFrame.
-        df_shap:
-            A Shapley values DataFrame.
-        thres:
-            Threshold risk value above which a customer's loan is denied.
+        l_explainers :
+            A list of Shapley explainers.
             
     returns:
-        Initial score in the waterfall. 
+        Mean expected_values from explainers. 
     """
-    # Find ID of last granted and first denied
-    df_decision.sort_values(by='TARGET', inplace=True)
-    last_granted = df_decision[df_decision['LOAN']]['SK_ID_CURR'].tail(1).values[0]
-    first_denied = df_decision[~df_decision['LOAN']]['SK_ID_CURR'].head(1).values[0]
+    # Aggregate explainers expected_values
+    base = 0
+    n_expl = len(l_explainers)
     
-    # Calculate respective total SHAP values
-    last_shap = df_shap.loc[last_granted].sum()
-    first_shap = df_shap.loc[first_denied].sum()
+    for expl in l_explainers:
+        base += (expl.expected_value[0]/n_expl)
     
-    # Base value
-    base = -(last_shap+first_shap)/2
     return base
 
 
-def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
+def plot_waterfall(df_cust, customer_id, n_top, thres, l_explainers):
     """
     Calculate waterfall based on shapley values for a given customer.
     
     params:
-        df_decision:
-            A loan decision DataFrame.
-        df_shap:
-            A Shapley values DataFrame.
+        df_cust :
+            A customer description DataFrame.
         customer_id :
             The SK_ID_CURR value of the customer for whom application decision
             will be explained.
@@ -299,8 +289,10 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
         The waterfall figure for selected customer.
         Loan applications with a final score below 0 are denied.
     """ 
-    # Set data for waterfall
-    df_waterfall = pd.DataFrame(df_shap.loc[customer_id])
+    # Set data for waterfall   
+    shaps = shap_explain(l_explainers, customer_id, df_cust)
+    df_waterfall=pd.DataFrame(shaps[0], index = df_cust.columns)
+    
     df_waterfall.columns = ['values']
     df_waterfall['abs']=df_waterfall['values'].apply('abs')
     df_waterfall.sort_values(by='abs', inplace=True)
@@ -311,7 +303,7 @@ def plot_waterfall(df_decision, df_shap, customer_id, n_top, thres):
     df_others.index = [f'others (n={len(df_waterfall.iloc[:-n_top])})']
     df_waterfall = df_others.append(df_top)
     
-    base_value = find_base_value(df_decision, df_shap, thres)
+    base_value = find_base_value(l_explainers)
     
     # Plot waterfall
     fig = go.Figure(

@@ -41,6 +41,8 @@ def generate(thres=0.3, n_sample=10000):
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
     models = dash_functions.load_models()
+    l_explainers = dash_functions.load_explainers()
+    
     panel_hist = dash_functions.load_panel()
     
     customer_list = df_cust.index.map(lambda x : {'label': str(x), 'value':x}).tolist()
@@ -227,14 +229,14 @@ def generate(thres=0.3, n_sample=10000):
         
         fig_panel.add_shape(
             type='rect',
-            x0=cust_bin -0.005, 
-            x1=cust_bin +0.005, 
+            x0=cust_bin-0.005, 
+            x1=cust_bin+0.005, 
             y0=0, y1=cust_height, 
             fillcolor='yellow')
         
         # Update waterfall
         fig_waterfall = dash_functions.plot_waterfall(
-            df_decision, df_shap, customer_id, n_top, thres=thres)
+            df_cust, customer_id, n_top, thres, l_explainers)
         
         # Update top n_top tables
         children_top = dash_functions.generate_top_tables(
