@@ -393,7 +393,7 @@ def generate_top_tables(n_top, df_cust, customer_id, l_explainers):
     return children
 
 
-def plot_shap_scatter(df_cust, df_shap, crit, cust):
+def plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers):
     """
     Shows evolution of SHAP value depending on selected criteria's value.
     
@@ -405,6 +405,8 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
         cust:
             A customer's ID.
             If not None, shows where the selected customer stands on the plot.
+        l_explainers :
+            A list of Shapley explainers.
             
     returns:
         A partial dependence plot, where x is the criteria value and y the SHAP value.
@@ -428,9 +430,11 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
     # Selected customer data
     if cust is not None:
         # Customer Shap and value for selected criteria
-        df_summary['selected_customer'] = df_summary.index==cust
-        cust_value=df_summary[df_summary['selected_customer']]['crit_value'].values[0]
-        cust_shap=df_summary[df_summary['selected_customer']]['shap_value'].values[0]
+        cust_value=df_cust.loc[cust, crit]
+        
+        shaps = shap_explain(l_explainers, cust, df_cust)
+        df_shaps=pd.DataFrame(shaps[0], index = df_cust.columns)
+        cust_shap=df_shaps.loc[crit, 0]
         
         # Show selected customer on the plot
         fig.add_shape(type='line', 
