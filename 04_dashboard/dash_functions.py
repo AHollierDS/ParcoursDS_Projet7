@@ -168,13 +168,25 @@ def load_criteria_descriptions():
     return df_crit
 
     
-def plot_panel(df_decision, thres):
+def load_panel():
+    """
+    Loads data to construct the histogram of representative customer panel.
+    """
+    file = 'panel_hist.joblib'
+    heights, bins = joblib.load(source_path+file)
+    heights=100*heights/heights.sum()
+    
+    return (heights, bins)
+    
+    
+def plot_panel(panel_hist, thres):
     """
     Display estimated risk on a representative panel of customers.
     
     params:
-        df_decision:
-            A loan decision DataFrame.
+        panel_hist:
+            A numpy histogram representing the distribution of estimated risk
+            on a representative customer panel.
         thres:
             Threshold risk value above which a customer's loan is denied.
             
@@ -182,11 +194,14 @@ def plot_panel(df_decision, thres):
         A figure displaying distribution of estimated risk on the panel.
     """
     # Plot customer risk distribution
-    fig = px.histogram(df_decision, x='TARGET', nbins=100, histnorm='percent',
-                  title='Distribution of estimated risk on a representative panel',
-                  labels={'TARGET':'Estimated risk'})
-    fig.update_layout(yaxis_title='% of customers', xaxis_tickformat = ',.0%',
-                     margin_t=30)
+    fig = go.Figure([go.Bar(x=panel_hist[1], y=panel_hist[0], width=0.01)])
+    
+    fig.update_layout(
+        yaxis_title='% of customers', xaxis_tickformat = ',.0%',
+        title='Distribution of estimated risk on a representative panel',
+        #labels={'TARGET':'Estimated risk'},
+        margin_t=30
+    )
     
     # Display threshold
     fig.add_shape(type='line', x0=thres, x1=thres, y0=0, y1=15, 

@@ -41,6 +41,7 @@ def generate(thres=0.3, n_sample=10000):
     df_shap=dash_functions.load_shap_values(n_sample=n_sample)
     
     models = dash_functions.load_models()
+    panel_hist = dash_functions.load_panel()
     
     customer_list = df_cust.index.map(lambda x : {'label': str(x), 'value':x}).tolist()
     
@@ -129,7 +130,7 @@ def generate(thres=0.3, n_sample=10000):
         html.H2(children='Customer position in customer panel',
                style=H2_style),
         dcc.Graph(id='panel', 
-                  figure=dash_functions.plot_panel(df_decision, thres)),
+                  figure=dash_functions.plot_panel(panel_hist, thres)),
         
         # Top criteria section
         html.H2(children='Most important criteria', style =H2_style),
@@ -217,21 +218,19 @@ def generate(thres=0.3, n_sample=10000):
         risk_output='{:.1%}'.format(risk)
         decision_output = 'granted' if decision else 'denied'
         
-        # Update customer panel
-        fig_panel = dash_functions.plot_panel(df_decision, thres)
+        # Show customer position on customer panel
+        fig_panel = dash_functions.plot_panel(panel_hist, thres)
+
+        cust_bin = risk//0.01/100
+        i_bin = panel_hist[1].tolist().index(cust_bin)
+        cust_height = panel_hist[0][i_bin]
         
-        cust_target = df_decision[
-            df_decision['SK_ID_CURR']==customer_id]['TARGET'].values[0]
-        
-        heights = np.histogram(
-            df_decision['TARGET'], bins=np.arange(0,1,0.01))[0]
-        
-        heights = heights/heights.sum()
-        cust_height = 100*heights[int(cust_target//0.01)]
-        
-        fig_panel.add_shape(type='rect',x0=cust_target//0.01/100, 
-                  x1=cust_target//0.01/100 + 0.01, 
-                  y0=0, y1=cust_height, fillcolor='yellow')
+        fig_panel.add_shape(
+            type='rect',
+            x0=cust_bin -0.005, 
+            x1=cust_bin +0.005, 
+            y0=0, y1=cust_height, 
+            fillcolor='yellow')
         
         # Update waterfall
         fig_waterfall = dash_functions.plot_waterfall(
