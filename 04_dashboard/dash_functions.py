@@ -121,6 +121,43 @@ def load_customer_data(n_sample=None):
     return df_cust
 
 
+def load_explainers():
+    """
+    Returns the list of Shapley explainers (one per LightGBM classifier)
+    """
+    file = 'shap_explainers.joblib'
+    l_explainers = joblib.load(source_path+file)
+    
+    return l_explainers
+
+
+def shap_explain(l_explainers, customer_id, df_cust):
+    """
+    Gives shapley values for each feature for a given customer.
+    
+    params:
+        l_explainers :
+            A list of Shapley explainers.
+        customer_id :
+            The customer for whom to explain loan decision.
+        df_cust :
+            A customer description DataFrame.
+            
+    returns :
+        A numpy array containing shapley values.          
+    """
+    customer_values = df_cust.loc[customer_id].values.reshape(1,-1)
+    shap_vals = np.zeros(customer_values.shape)
+    n_expl = len(l_explainers)
+    
+    # Aggregate explainations from every SHAP explainer
+    for expl in range(n_expl):
+        shapley = l_explainers[expl].shap_values(customer_values)[0]
+        shap_vals += (shapley/n_expl)
+        
+    return shap_vals
+
+
 def load_shap_values(n_sample=None):
     """
     Load dataset containing shap values for each customer.
