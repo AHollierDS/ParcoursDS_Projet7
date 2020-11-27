@@ -240,7 +240,7 @@ def generate(thres=0.3, n_sample=10000):
         
         # Update top n_top tables
         children_top = dash_functions.generate_top_tables(
-            n_top, df_cust, df_shap, customer_id)
+            n_top, df_cust, customer_id, l_explainers)
         
         return risk_output, decision_output, fig_panel, fig_waterfall, children_top
     

@@ -284,6 +284,8 @@ def plot_waterfall(df_cust, customer_id, n_top, thres, l_explainers):
             Number of top criteria to display.
         thres:
             Threshold risk value above which a customer's loan is denied.
+        l_explainers :
+            A list of Shapley explainers.
             
     returns:
         The waterfall figure for selected customer.
@@ -340,7 +342,7 @@ def plot_waterfall(df_cust, customer_id, n_top, thres, l_explainers):
     return fig
 
 
-def generate_top_tables(n_top, df_cust, df_shap, customer_id):
+def generate_top_tables(n_top, df_cust, customer_id, l_explainers):
     """
     For a given customer id, retrieves the n_top criteria having most impact on loan decision.
     
@@ -349,10 +351,10 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
             Number of top criteria to display.
         df_cust:
             A customer description DataFrame.
-        df_shap:
-            A Shapley values DataFrame.
         customer_id :
             The SK_ID_CURR value of the customer for whom main criteria are searched.
+        l_explainers :
+            A list of Shapley explainers.
     
     returns:
         Two tables of main criteria :
@@ -360,7 +362,8 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
         - Top decisive overall criteria compared to the customer values.
     """
     # Retrieve shap values for selected customer 
-    df_1 = df_shap.loc[[customer_id]].T
+    shaps = shap_explain(l_explainers, customer_id, df_cust)
+    df_1 =pd.DataFrame(shaps[0], index = df_cust.columns)
     df_1.columns=['Impact']
 
     # Retrieve criteria values for selected customer
@@ -397,7 +400,10 @@ def generate_top_tables(n_top, df_cust, df_shap, customer_id):
     )]
     
     # Top table sorted by mean absolute impact for all customers
-    overall_top = df_shap.apply('abs').mean().sort_values(ascending=False).head(n_top)
+    file = 'mean_abs_shaps.joblib'
+    mean_abs_shaps = joblib.load(source_path+file)
+    
+    overall_top = mean_abs_shaps.sort_values(ascending=False).head(n_top)
     df_overall = df_table.loc[overall_top.index]
     df_overall['Mean impact'] = overall_top
     df_overall['Criteria'] = df_overall.index
