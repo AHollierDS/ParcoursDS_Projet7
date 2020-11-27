@@ -6,6 +6,7 @@ This script contains functions called by dashboard.py to update the dashboard.
 
 import pandas as pd
 import numpy as np
+import joblib
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -14,6 +15,53 @@ import plotly.graph_objs as go
 
 
 source_path = '../data/data_dashboard/'
+
+def load_models():
+    """
+    Loads and returns the list of LGBM classifiers.
+    """
+    # Load the file containing models
+    file = 'LGBM_classifiers.joblib'
+    models = joblib.load(source_path+file)
+    
+    return models
+
+
+def predict_decision(models, df_cust, customer_id, thres):
+    """
+    Use models to predict whether loan shall be granted for a given customer.
+    
+    params:
+        models:
+            A list of models to use for making prediction.
+        df_cust : 
+            A customer description DataFrame.
+        customer_id :
+            The ID of the customer for whom prediction will be made.
+        thres :
+            Threshold risk value above which a customer's loan is denied.
+            
+    returns :
+        A tuple where the first value is the estimated risk and the second
+        value is a boolean stating is loan is granted.
+    """
+    # Prepare data for prediction
+    n_models = len(models)
+    cust_array = df_cust.loc[customer_id].values.reshape(1,-1)
+    decision_vector = np.array([[0,0]], dtype='float')
+    
+    # Make prediction with each individual model
+    for clf in range(n_models):
+        decision_vector += models[clf].predict_proba(cust_array)
+        
+    # Average probability and make decision
+    decision_vector/=n_models
+    
+    prob_deny = decision_vector[0][1]
+    decision = prob_deny < thres
+    
+    return (prob_deny, decision)
+    
 
 def load_decisions(thres, n_sample=None):
     """
