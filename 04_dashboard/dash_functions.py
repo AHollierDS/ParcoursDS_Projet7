@@ -419,7 +419,7 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust):
     
     # Join data & visualization
     df_summary = s_shap.join(s_vals)
-    fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.1)
+    fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.5)
     
     fig.update_layout(
         xaxis_title='Criteria value',  yaxis_title = 'Impact', margin_t=30

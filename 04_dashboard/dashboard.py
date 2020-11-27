@@ -44,7 +44,8 @@ def generate(thres=0.3, n_sample=10000):
     
     panel_hist = dash_functions.load_panel()
     
-    customer_list = df_cust.index.map(lambda x : {'label': str(x), 'value':x}).tolist()
+    customer_list = df_cust.index.map(
+        lambda x : {'label': str(x), 'value':x}).tolist()
     
     logo = 'https://user.oc-static.com/upload/2019/02/25/15510866018677_'+\
         'logo%20projet%20fintech.png'  
