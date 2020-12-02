@@ -138,9 +138,7 @@ def load_shap_values():
     """
     # Load data
     file='shap_values.csv.gzip'
-    df_shap = pd.read_csv(source_path+file, compression='gzip')
-    df_shap.index=df_shap['SK_ID_CURR']
-    df_shap = df_shap.drop(columns = ['SK_ID_CURR'])
+    df_shap = pd.read_csv(source_path+file, compression='gzip', index_col=0)
     
     return df_shap
 
@@ -393,7 +391,7 @@ def generate_top_tables(n_top, df_cust, customer_id, l_explainers):
     return children
 
 
-def plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers):
+def plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers, thres):
     """
     Shows evolution of SHAP value depending on selected criteria's value.
     
@@ -407,13 +405,16 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers):
             If not None, shows where the selected customer stands on the plot.
         l_explainers :
             A list of Shapley explainers.
+        thres:
+            Threshold risk value above which a customer's loan is denied.
             
     returns:
         A partial dependence plot, where x is the criteria value and y the SHAP value.
     """
     # Shap values
-    s_shap=df_shap[[crit]].copy()
-    s_shap.columns=['shap_value']
+    s_shap=df_shap[[crit, 'est_risk']].copy()
+    s_shap['est_risk'] = s_shap['est_risk'].clip(0,thres)
+    s_shap.columns=['shap_value', 'estimated_risk']
     
     # Criteria values
     s_vals = df_cust[[crit]].copy()
@@ -421,7 +422,13 @@ def plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers):
     
     # Join data & visualization
     df_summary = s_shap.join(s_vals)
-    fig=px.scatter(df_summary, x='crit_value', y='shap_value', opacity=0.5)
+    
+    fig=px.scatter(df_summary, 
+                   x='crit_value', y='shap_value', 
+                   color='estimated_risk',
+                   color_continuous_scale=['green', 'yellow', 'red'],
+                   #opacity=0.5
+                  )
     
     fig.update_layout(
         xaxis_title='Criteria value',  yaxis_title = 'Impact', margin_t=30

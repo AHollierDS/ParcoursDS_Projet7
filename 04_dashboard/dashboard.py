@@ -263,7 +263,8 @@ def generate(thres=0.3, n_sample=10000):
         if crit is not None:
             output=df_crit[df_crit['Row']==crit]['Description'].values[0]
             title=f'Evolution of impact with {crit} value :'
-            fig=dash_functions.plot_shap_scatter(df_cust, df_shap, crit, cust, l_explainers)
+            fig=dash_functions.plot_shap_scatter(
+                df_cust, df_shap, crit, cust, l_explainers, thres)
 
             if cust is not None:
                 cust_crit_val=df_cust.loc[cust, crit]
